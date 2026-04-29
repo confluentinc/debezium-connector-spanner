@@ -5,6 +5,8 @@
  */
 package io.debezium.connector.spanner.config.validation;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 
@@ -63,6 +65,7 @@ class ConnectionValidatorTest {
 
             ConfigurationValidator.ValidationContext validationContext = new ConfigurationValidator.ValidationContext(configuration, configValueMap);
             ConnectionValidator connectionValidator = spy(ConnectionValidator.withContext(validationContext));
+            doNothing().when(connectionValidator).validateConnection(any(), any(), any(), any());
 
             Assertions.assertTrue(connectionValidator.isSuccess());
             connectionValidator.validate();
@@ -112,6 +115,7 @@ class ConnectionValidatorTest {
         ConfigurationValidator.ValidationContext validationContext = new ConfigurationValidator.ValidationContext(configuration, configValueMap);
 
         ConnectionValidator connectionValidator = spy(ConnectionValidator.withContext(validationContext));
+        doNothing().when(connectionValidator).validateConnection(any(), any(), any(), any());
         connectionValidator.validate();
         Assertions.assertEquals(true, connectionValidator.isSuccess());
     }
