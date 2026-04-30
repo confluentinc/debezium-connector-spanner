@@ -15,6 +15,8 @@ import static io.debezium.connector.spanner.config.BaseSpannerConnectorConfig.SP
 import static io.debezium.connector.spanner.config.BaseSpannerConnectorConfig.SPANNER_HOST;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.slf4j.Logger;
@@ -71,21 +73,6 @@ public class ConnectionValidator implements ConfigurationValidator.Validator {
         String credentialPath = context.getString(SPANNER_CREDENTIALS_PATH);
         String credentialJson = context.getString(SPANNER_CREDENTIALS_JSON);
 
-        if (!isAgainstEmulator && !FieldValidator.isSpecified(googleCredentials) && !FieldValidator.isSpecified(credentialPath)
-                && !FieldValidator.isSpecified(credentialJson)) {
-            try {
-                ServiceAccountCredentials.getApplicationDefault();
-            }
-            catch (IOException e) {
-                LOGGER.error("The Application Default Credentials are not available.", e);
-                this.result = false;
-                return this;
-            }
-            String message = String.format(PLEASE_SPECIFY_CONFIGURATION_PROPERTY_MSG, SPANNER_CREDENTIALS_PATH.name(),
-                    SPANNER_CREDENTIALS_JSON.name(), GOOGLE_APPLICATION_CREDENTIALS_ENV_VAR);
-            LOGGER.info(message, SPANNER_CREDENTIALS_PATH, SPANNER_CREDENTIALS_JSON);
-        }
-
         if (FieldValidator.isSpecified(host) && isAgainstEmulator) {
             LOGGER.error(HOST_CONFLICT);
             context.error(HOST_CONFLICT, SPANNER_HOST, SPANNER_EMULATOR_HOST);
@@ -93,13 +80,40 @@ public class ConnectionValidator implements ConfigurationValidator.Validator {
             return this;
         }
 
-        validateConnection(credentialJson, credentialPath, host, emulatorHost);
+        validateConnection(credentialJson, credentialPath, host, emulatorHost, isAgainstEmulator, googleCredentials);
 
         return this;
     }
 
     @VisibleForTesting
-    void validateConnection(String credentialJson, String credentialPath, String host, String emulatorHost) {
+    void validateConnection(String credentialJson, String credentialPath, String host, String emulatorHost,
+                            boolean isAgainstEmulator, String googleCredentialsEnv) {
+        if (!isAgainstEmulator) {
+            try {
+                if (FieldValidator.isSpecified(credentialJson)) {
+                    ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialJson.getBytes()));
+                }
+                else if (FieldValidator.isSpecified(credentialPath)) {
+                    ServiceAccountCredentials.fromStream(new FileInputStream(credentialPath));
+                }
+                else if (FieldValidator.isSpecified(googleCredentialsEnv)) {
+                    ServiceAccountCredentials.fromStream(new FileInputStream(googleCredentialsEnv));
+                }
+                else {
+                    ServiceAccountCredentials.getApplicationDefault();
+                    String message = String.format(PLEASE_SPECIFY_CONFIGURATION_PROPERTY_MSG, SPANNER_CREDENTIALS_PATH.name(),
+                            SPANNER_CREDENTIALS_JSON.name());
+                    LOGGER.info(message);
+                }
+            }
+            catch (IOException e) {
+                this.result = false;
+                LOGGER.error(e.getMessage(), e);
+                context.error(e.getMessage(), SPANNER_CREDENTIALS_JSON, SPANNER_CREDENTIALS_PATH);
+                return;
+            }
+        }
+
         DatabaseClientFactory databaseClientFactory = null;
         try {
             databaseClientFactory = new DatabaseClientFactory(

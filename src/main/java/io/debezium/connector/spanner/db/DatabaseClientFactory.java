@@ -89,7 +89,7 @@ public class DatabaseClientFactory {
         GoogleCredentials credential = null;
         if (credentialsJson != null) {
             try {
-                credential = GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes()));
+                credential = ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes()));
             }
             catch (IOException ex) {
                 LOGGER.error("Error reading Google credentials from JSON parameter");
@@ -98,7 +98,7 @@ public class DatabaseClientFactory {
         }
         else if (credentialsPath != null) {
             try {
-                credential = GoogleCredentials.fromStream(new FileInputStream(credentialsPath));
+                credential = ServiceAccountCredentials.fromStream(new FileInputStream(credentialsPath));
             }
             catch (IOException e) {
                 LOGGER.error("Error reading Google credentials from file path");
