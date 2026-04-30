@@ -65,7 +65,7 @@ class ConnectionValidatorTest {
 
             ConfigurationValidator.ValidationContext validationContext = new ConfigurationValidator.ValidationContext(configuration, configValueMap);
             ConnectionValidator connectionValidator = spy(ConnectionValidator.withContext(validationContext));
-            doNothing().when(connectionValidator).validateConnection(any(), any(), any(), any());
+            doNothing().when(connectionValidator).validateConnection(any(), any(), any(), any(), any(Boolean.class), any());
 
             Assertions.assertTrue(connectionValidator.isSuccess());
             connectionValidator.validate();
@@ -115,7 +115,7 @@ class ConnectionValidatorTest {
         ConfigurationValidator.ValidationContext validationContext = new ConfigurationValidator.ValidationContext(configuration, configValueMap);
 
         ConnectionValidator connectionValidator = spy(ConnectionValidator.withContext(validationContext));
-        doNothing().when(connectionValidator).validateConnection(any(), any(), any(), any());
+        doNothing().when(connectionValidator).validateConnection(any(), any(), any(), any(), any(Boolean.class), any());
         connectionValidator.validate();
         Assertions.assertEquals(true, connectionValidator.isSuccess());
     }
