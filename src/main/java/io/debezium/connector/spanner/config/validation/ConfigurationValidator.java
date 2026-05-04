@@ -41,6 +41,7 @@ public class ConfigurationValidator {
         ConnectionValidator.withContext(validationContext).validate()
                 .then(ChangeStreamValidator.withContext(validationContext));
         StartEndTimeValidator.withContext(validationContext).validate();
+        TaskScalingValidator.withContext(validationContext).validate();
 
         return new Config(validationContext.getResults());
     }

@@ -462,7 +462,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withDefault(5000)
             .withDescription("Interval in milliseconds to check whether the task is overloaded by partitions");
 
-    protected static final Field MAX_TASKS = Field.create(MAX_TASKS_PROPERTY_NAME)
+    public static final Field MAX_TASKS = Field.create(MAX_TASKS_PROPERTY_NAME)
             .withDisplayName("Max Tasks")
             .withType(Type.INT)
             .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 10))
@@ -471,7 +471,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withDefault(10)
             .withDescription("Maximum number of tasks in connector");
 
-    protected static final Field MIN_TASKS = Field.create(MIN_TASKS_PROPERTY_NAME)
+    public static final Field MIN_TASKS = Field.create(MIN_TASKS_PROPERTY_NAME)
             .withDisplayName("Min Tasks")
             .withType(Type.INT)
             .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 11))
@@ -490,7 +490,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withDescription("Connector will increase task number, " +
                     "if actual partitions per task ratio become > desired up to " + MAX_TASKS_PROPERTY_NAME + " bound");
 
-    protected static final Field SCALER_MONITOR_ENABLED = Field.create(SCALER_MONITOR_ENABLED_PROPERTY_NAME)
+    public static final Field SCALER_MONITOR_ENABLED = Field.create(SCALER_MONITOR_ENABLED_PROPERTY_NAME)
             .withDisplayName("Scaler monitor enabled")
             .withType(Type.BOOLEAN)
             .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 13))
