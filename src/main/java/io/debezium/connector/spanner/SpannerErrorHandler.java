@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.base.ChangeEventQueue;
+import io.debezium.connector.spanner.db.stream.exception.OutOfRangeChangeStreamException;
 import io.debezium.pipeline.ErrorHandler;
 
 /**
@@ -36,7 +37,16 @@ public class SpannerErrorHandler extends ErrorHandler {
 
     @Override
     protected boolean isRetriable(Throwable throwable) {
-        return true;
+        return !hasCause(throwable, OutOfRangeChangeStreamException.class);
+    }
+
+    private static boolean hasCause(Throwable throwable, Class<? extends Throwable> causeClass) {
+        for (Throwable t = throwable; t != null; t = t.getCause()) {
+            if (causeClass.isInstance(t)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
