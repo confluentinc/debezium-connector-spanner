@@ -97,7 +97,8 @@ public class SpannerChangeStream implements ChangeStream {
 
         try {
             while (runningFlagSupplier.getAsBoolean()) {
-                if (signal.await(WAIT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS) && exception.get() != null) {
+                signal.await(WAIT_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+                if (exception.get() != null) {
                     LOGGER.warn("Task {}, is throwing exception during streaming {}", this.taskUid, exception.get());
                     throw exception.get();
                 }
