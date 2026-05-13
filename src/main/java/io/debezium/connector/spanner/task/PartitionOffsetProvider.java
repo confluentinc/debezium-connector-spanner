@@ -79,7 +79,28 @@ public class PartitionOffsetProvider {
                 .map(token -> new SpannerPartition(token).getSourcePartition())
                 .collect(Collectors.toList());
 
-        Map<Map<String, String>, Map<String, Object>> result = this.offsetStorageReader.offsets(partitionsMapList);
+        Map<Map<String, String>, Map<String, Object>> result;
+        Future<Map<Map<String, String>, Map<String, Object>>> future = executor.submit(
+                () -> this.offsetStorageReader.offsets(partitionsMapList));
+        try {
+            result = future.get(30, TimeUnit.SECONDS);
+        }
+        catch (TimeoutException ex) {
+            LOGGER.error("Failed to retrieve batch offsets for {} partitions in time", partitions.size(), ex);
+            future.cancel(true);
+            return Map.of();
+        }
+        catch (InterruptedException e) {
+            LOGGER.error("Interrupted while retrieving batch offsets for {} partitions", partitions.size(), e);
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            return Map.of();
+        }
+        catch (ExecutionException e) {
+            LOGGER.error("Failed to retrieve batch offsets for {} partitions: {}", partitions.size(), e.toString(), e);
+            future.cancel(true);
+            return Map.of();
+        }
 
         if (result == null) {
             return Map.of();
