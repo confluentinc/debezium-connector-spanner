@@ -126,10 +126,10 @@ class SpannerEventMetadataProviderTest {
 
     private static Stream<Arguments> summaryStringProvider() {
         return Stream.of(
-                Arguments.of(null, null, "42", null, "key: 42"),
+                Arguments.of(null, null, "42", null, ""),
                 Arguments.of(null, null, null, null, ""),
                 Arguments.of(new TableId("Catalog Name", "Schema Name", "Table Name"),
-                        mock(SpannerOffsetContext.class), "Key", null, "key: Key")
+                        mock(SpannerOffsetContext.class), "Key", null, "Catalog Name.Schema Name.Table Name")
 
         );
     }

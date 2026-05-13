@@ -45,7 +45,7 @@ public class QuantileMeter {
             while (!Thread.currentThread().isInterrupted()) {
                 Double pollValue;
                 try {
-                    pollValue = queue.poll(100, TimeUnit.MILLISECONDS);
+                    pollValue = queue.poll(500, TimeUnit.MILLISECONDS);
 
                     if (timeoutMeter != null && timeoutMeter.isExpired()) {
                         timeoutMeter = TimeoutMeter.setTimeout(clearInterval);
