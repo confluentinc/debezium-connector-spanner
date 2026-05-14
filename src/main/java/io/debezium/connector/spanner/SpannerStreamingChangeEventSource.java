@@ -168,6 +168,9 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
             if (thread != null) {
                 thread.interrupt();
             }
+
+            LOGGER.info("Clearing event queue...");
+            eventQueue.clear();
         }
 
     }

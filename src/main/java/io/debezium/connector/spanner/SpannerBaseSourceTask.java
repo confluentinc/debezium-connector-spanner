@@ -59,6 +59,12 @@ public abstract class SpannerBaseSourceTask
         }
     }
 
+    protected void clearRecords() {
+        synchronized (this) {
+            records.clear();
+        }
+    }
+
     protected Offsets<SpannerPartition, SpannerOffsetContext> getInitialOffsets() {
         return Offsets.of(Collect.hashMapOf(SpannerPartition.getInitialSpannerPartition(), null));
     }
