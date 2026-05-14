@@ -44,4 +44,8 @@ public class StreamEventQueue {
         return event;
     }
 
+    public void clear() {
+        this.queue.clear();
+    }
+
 }
