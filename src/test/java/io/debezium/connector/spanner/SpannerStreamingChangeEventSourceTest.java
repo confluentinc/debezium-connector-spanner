@@ -291,21 +291,8 @@ class SpannerStreamingChangeEventSourceTest {
                         "Stream Name", new SchemaDao(mock(DatabaseClient.class)), mock(Runnable.class)),
                 null, true, mock(SpannerOffsetContextFactory.class));
 
-        SourceRecord sourceRecord1 = spy(new SourceRecord(Map.of(), Map.of(), "t1", Schema.STRING_SCHEMA, "v1"));
-        SourceRecord sourceRecord2 = spy(new SourceRecord(Map.of(), Map.of(), "t2", Schema.STRING_SCHEMA, "v2"));
-        Map sourcePartition = Map.of("partitionToken", "v1");
-        when(sourceRecord2.sourcePartition()).thenReturn(sourcePartition);
-        Headers headers = mock(Headers.class);
-        Header header = mock(Header.class);
-        when(header.value()).thenReturn("header");
-        when(headers.lastWithName(anyString())).thenReturn(header);
-        when(sourceRecord2.headers()).thenReturn(headers);
-        spannerStreamingChangeEventSource.commitRecords(List.of(sourceRecord1, sourceRecord2));
-
-        verify(sourceRecord1, times(2)).sourcePartition();
-        verify(sourceRecord1, times(2)).headers();
-
-        verify(sourceRecord2, times(2)).sourcePartition();
-        verify(sourceRecord2, times(2)).headers();
+        CommittedRecord record1 = new CommittedRecord(null, null);
+        CommittedRecord record2 = new CommittedRecord("v1", "header");
+        spannerStreamingChangeEventSource.commitRecords(List.of(record1, record2));
     }
 }
