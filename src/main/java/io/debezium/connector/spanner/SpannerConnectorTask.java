@@ -306,6 +306,10 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         spannerMeter.shutdown();
 
+        LOGGER.info("Clearing records");
+
+        clearRecords();
+
         LOGGER.info("Task {} was stopped", taskUid);
     }
 
