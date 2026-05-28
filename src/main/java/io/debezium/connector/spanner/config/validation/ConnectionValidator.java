@@ -108,8 +108,9 @@ public class ConnectionValidator implements ConfigurationValidator.Validator {
             }
             catch (IOException e) {
                 this.result = false;
-                LOGGER.error(e.getMessage(), e);
-                context.error(e.getMessage(), SPANNER_CREDENTIALS_JSON, SPANNER_CREDENTIALS_PATH);
+                LOGGER.error("Failed to parse gcp.spanner.credentials.json");
+                LOGGER.debug("Credentials parse failure", e);
+                context.error("Failed to parse gcp.spanner.credentials.json", SPANNER_CREDENTIALS_JSON, SPANNER_CREDENTIALS_PATH);
                 return;
             }
         }
