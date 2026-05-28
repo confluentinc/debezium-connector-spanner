@@ -271,11 +271,12 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
                     new SpannerChangeRecordEmitter(recordUid, event.getModType(), mod, partition, offsetContext,
                             Clock.SYSTEM, connectorConfig));
             if (dispatched) {
-                LOGGER.debug("DataChangeEvent has been dispatched form table {} with modification: {}, offset{}, event: {}", tableId.getTableName(), mod,
-                        offsetContext.getOffset(), event);
+                LOGGER.debug("DataChangeEvent has been dispatched from table {}, modNumber: {}, partition: {}, commitTimestamp: {}, offset: {}",
+                        tableId.getTableName(), mod.getModNumber(), event.getPartitionToken(), event.getCommitTimestamp(), offsetContext.getOffset());
             }
             else {
-                LOGGER.info("DataChangeEvent has not been dispatched form table {} with modification: {}", tableId.getTableName(), mod);
+                LOGGER.info("DataChangeEvent has not been dispatched from table {}, modNumber: {}, partition: {}, commitTimestamp: {}",
+                        tableId.getTableName(), mod.getModNumber(), event.getPartitionToken(), event.getCommitTimestamp());
             }
         }
 
