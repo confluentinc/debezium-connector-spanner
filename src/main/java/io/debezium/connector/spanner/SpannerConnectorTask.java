@@ -143,7 +143,8 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
         final DebeziumHeartbeatFactory spannerHeartbeatFactory = new SpannerHeartbeatFactory();
 
         final PartitionOffsetProvider partitionOffsetProvider = new PartitionOffsetProvider(
-                this.context.offsetStorageReader(), spannerMeter.getMetricsEventPublisher());
+            this.context.offsetStorageReader(), spannerMeter.getMetricsEventPublisher(),
+            connectorConfig.offsetBatchRetrievalTimeoutMs());
 
         final SynchronizedPartitionManager partitionManager = new SynchronizedPartitionManager(
                 event -> this.synchronizationTaskContext.publishEvent(event));
