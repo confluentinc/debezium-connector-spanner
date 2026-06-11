@@ -64,21 +64,35 @@ public class ChangeStreamValidator implements ConfigurationValidator.Validator {
 
         String changeStreamName = context.getString(CHANGE_STREAM_NAME);
 
-        DatabaseClientFactory databaseClientFactory = new DatabaseClientFactory(context.getString(PROJECT_ID),
-                context.getString(INSTANCE_ID),
-                context.getString(DATABASE_ID),
-                context.getString(SPANNER_CREDENTIALS_JSON),
-                context.getString(SPANNER_CREDENTIALS_PATH),
-                context.getString(SPANNER_HOST),
-                context.getString(SPANNER_EMULATOR_HOST),
-                context.getString(DATABASE_ROLE));
+        DatabaseClientFactory databaseClientFactory = null;
+        try {
+            databaseClientFactory = new DatabaseClientFactory(context.getString(PROJECT_ID),
+                    context.getString(INSTANCE_ID),
+                    context.getString(DATABASE_ID),
+                    context.getString(SPANNER_CREDENTIALS_JSON),
+                    context.getString(SPANNER_CREDENTIALS_PATH),
+                    context.getString(SPANNER_HOST),
+                    context.getString(SPANNER_EMULATOR_HOST),
+                    context.getString(DATABASE_ROLE));
 
-        this.result = isStreamExist(databaseClientFactory.getDatabaseClient(), changeStreamName);
+            this.result = isStreamExist(databaseClientFactory.getDatabaseClient(), changeStreamName);
 
-        if (!result) {
-            String msg = "ChangeStream '" + changeStreamName + "' doesn't exist or you don't have sufficient permissions";
-            LOGGER.error(msg);
+            if (!result) {
+                String msg = "ChangeStream '" + changeStreamName + "' doesn't exist or you don't have sufficient permissions";
+                LOGGER.error(msg);
+                context.error(msg, CHANGE_STREAM_NAME);
+            }
+        }
+        catch (Exception e) {
+            this.result = false;
+            String msg = "Failed to connect to Spanner: " + e.getMessage();
+            LOGGER.error(msg, e);
             context.error(msg, CHANGE_STREAM_NAME);
+        }
+        finally {
+            if (databaseClientFactory != null) {
+                databaseClientFactory.closeSpanner();
+            }
         }
         return this;
     }
