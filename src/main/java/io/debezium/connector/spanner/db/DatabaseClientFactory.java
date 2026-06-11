@@ -93,7 +93,7 @@ public class DatabaseClientFactory {
             }
             catch (IOException ex) {
                 LOGGER.error("Error reading Google credentials from JSON parameter");
-                LOGGER.error(ex.getMessage(), ex);
+                LOGGER.debug("Credentials JSON parse failure", ex);
             }
         }
         else if (credentialsPath != null) {
@@ -102,7 +102,7 @@ public class DatabaseClientFactory {
             }
             catch (IOException e) {
                 LOGGER.error("Error reading Google credentials from file path");
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.debug("Credentials file read failure", e);
             }
         }
         else {
@@ -110,8 +110,8 @@ public class DatabaseClientFactory {
                 credential = ServiceAccountCredentials.getApplicationDefault();
             }
             catch (IOException e) {
-                LOGGER.error("The Application Default Credentials are not available.");
-                LOGGER.error(e.getMessage(), e);
+                LOGGER.error("The Application Default Credentials are not available");
+                LOGGER.debug("Application Default Credentials failure", e);
             }
         }
         return credential;
