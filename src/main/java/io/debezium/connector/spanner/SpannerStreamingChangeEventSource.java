@@ -332,7 +332,7 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
         }
 
         for (CommittedRecord record : records) {
-            this.finishingPartitionManager.commitRecord(record.getToken(), record.getRecordUid());
+            this.finishingPartitionManager.commitRecord(record.token(), record.recordUid());
         }
     }
 
