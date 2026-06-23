@@ -266,6 +266,23 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
         return getConfig().getString(SYNC_MIN_CLEANABLE_DIRTY_RATIO);
     }
 
+    public static final String COORDINATION_MODE_PROPERTY_NAME = "connector.spanner.coordination.mode";
+    public static final String COORDINATION_MODE_KAFKA = "kafka";
+    public static final String COORDINATION_MODE_SINGLE_TASK = "single-task";
+
+    /**
+     * Selects the partition-coordination backend: {@code kafka} (default, multi-task via the
+     * internal sync/rebalancing topics) or {@code single-task} (broker-less, one task owns the
+     * whole change stream). See the {@code io.debezium.connector.spanner.coordination} package.
+     */
+    public String coordinationMode() {
+        return getConfig().getString(COORDINATION_MODE_PROPERTY_NAME, COORDINATION_MODE_KAFKA);
+    }
+
+    public boolean isSingleTaskCoordination() {
+        return COORDINATION_MODE_SINGLE_TASK.equalsIgnoreCase(coordinationMode());
+    }
+
     public int getMaxTasks() {
         return getConfig().getInteger(MAX_TASKS);
     }

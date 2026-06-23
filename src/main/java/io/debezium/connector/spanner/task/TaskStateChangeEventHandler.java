@@ -15,9 +15,9 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.db.stream.ChangeStream;
 import io.debezium.connector.spanner.exception.SpannerConnectorException;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
 import io.debezium.connector.spanner.processor.SpannerEventDispatcher;
 import io.debezium.connector.spanner.task.operation.ChildPartitionOperation;
 import io.debezium.connector.spanner.task.operation.ClearSharedPartitionOperation;
@@ -45,7 +45,7 @@ public class TaskStateChangeEventHandler {
 
     private final TaskSyncContextHolder taskSyncContextHolder;
 
-    private final TaskSyncPublisher taskSyncPublisher;
+    private final TaskStatePublisher taskSyncPublisher;
 
     private final ChangeStream changeStream;
     private final PartitionFactory partitionFactory;
@@ -58,7 +58,7 @@ public class TaskStateChangeEventHandler {
     private final AtomicLong failOverloadedTaskTimer = new AtomicLong(System.currentTimeMillis());
 
     public TaskStateChangeEventHandler(TaskSyncContextHolder taskSyncContextHolder,
-                                       TaskSyncPublisher taskSyncPublisher,
+                                       TaskStatePublisher taskSyncPublisher,
                                        ChangeStream changeStream,
                                        PartitionFactory partitionFactory,
                                        SpannerEventDispatcher spannerEventDispatcher,

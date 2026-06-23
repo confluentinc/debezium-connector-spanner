@@ -21,20 +21,45 @@ import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.config.BaseSpannerConnectorConfig;
+import io.debezium.connector.spanner.coordination.CoordinationProvisioner;
+import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
 import io.debezium.connector.spanner.kafka.KafkaUtils;
 
 /**
- * Provides functionality to create and change Rebalance and Sync topics
+ * Provides functionality to create and change Rebalance and Sync topics. Doubles as the Kafka-mode
+ * {@link CoordinationProvisioner}: {@link #ensureReady()} provisions the internal rebalancing and
+ * sync topics once at connector startup.
  */
-public class KafkaInternalTopicAdminService {
+public class KafkaInternalTopicAdminService implements CoordinationProvisioner {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaInternalTopicAdminService.class);
 
-    private final AdminClient adminClient;
+    private AdminClient adminClient;
     private final SpannerConnectorConfig config;
 
     public KafkaInternalTopicAdminService(AdminClient adminClient, SpannerConnectorConfig config) {
         this.adminClient = adminClient;
         this.config = config;
+    }
+
+    /**
+     * Creates a service that provisions its own short-lived admin client when {@link #ensureReady()}
+     * is called. Used as the Kafka-mode {@link CoordinationProvisioner}.
+     */
+    public KafkaInternalTopicAdminService(SpannerConnectorConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public void ensureReady() {
+        KafkaAdminClientFactory adminClientFactory = new KafkaAdminClientFactory(config);
+        try {
+            this.adminClient = adminClientFactory.getAdminClient();
+            createAdjustRebalanceTopic();
+            createVerifySyncTopic();
+        }
+        finally {
+            adminClientFactory.close();
+        }
     }
 
     public void createAdjustRebalanceTopic() {

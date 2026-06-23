@@ -179,9 +179,17 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         final SourceInfoFactory sourceInfoFactory = new SourceInfoFactory(connectorConfig, lowWatermarkHolder);
 
-        this.adminClientFactory = new KafkaAdminClientFactory(connectorConfig);
-
-        final KafkaPartitionInfoProvider kafkaPartitionInfoProvider = new KafkaPartitionInfoProvider(adminClientFactory.getAdminClient());
+        final KafkaPartitionInfoProvider kafkaPartitionInfoProvider;
+        if (connectorConfig.isSingleTaskCoordination()) {
+            // Broker-less: no Kafka admin client. The partition-info provider is only used to
+            // publish low-watermark stamps, which are disabled in this mode, so it is never called.
+            this.adminClientFactory = null;
+            kafkaPartitionInfoProvider = new KafkaPartitionInfoProvider(null);
+        }
+        else {
+            this.adminClientFactory = new KafkaAdminClientFactory(connectorConfig);
+            kafkaPartitionInfoProvider = new KafkaPartitionInfoProvider(adminClientFactory.getAdminClient());
+        }
 
         final PartitionOffsetProvider partitionOffsetProvider = new PartitionOffsetProvider(
                 this.context.offsetStorageReader(), spannerMeter.getMetricsEventPublisher(),
@@ -310,7 +318,9 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         LOGGER.info("Stopping task {}, adminClientFactory", taskUid);
 
-        adminClientFactory.close();
+        if (adminClientFactory != null) {
+            adminClientFactory.close();
+        }
 
         LOGGER.info("Stopping task {}, spannerMeter", taskUid);
 

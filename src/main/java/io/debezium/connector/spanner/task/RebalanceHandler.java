@@ -9,7 +9,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
 
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
 import io.debezium.connector.spanner.kafka.internal.model.TaskState;
 import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
@@ -25,13 +25,13 @@ public class RebalanceHandler {
 
     private final TaskSyncContextHolder taskSyncContextHolder;
 
-    private final TaskSyncPublisher taskSyncPublisher;
+    private final TaskStatePublisher taskSyncPublisher;
 
     private final LeaderAction leaderAction;
 
     private final LowWatermarkStampPublisher lowWatermarkStampPublisher;
 
-    public RebalanceHandler(TaskSyncContextHolder taskSyncContextHolder, TaskSyncPublisher taskSyncPublisher,
+    public RebalanceHandler(TaskSyncContextHolder taskSyncContextHolder, TaskStatePublisher taskSyncPublisher,
                             LeaderAction leaderAction, LowWatermarkStampPublisher lowWatermarkStampPublisher) {
         this.taskSyncContextHolder = taskSyncContextHolder;
         this.taskSyncPublisher = taskSyncPublisher;

@@ -18,16 +18,23 @@ import org.apache.kafka.clients.admin.DescribeConsumerGroupsResult;
 import org.apache.kafka.clients.admin.MemberDescription;
 import org.apache.kafka.common.KafkaFuture;
 
+import io.debezium.connector.spanner.coordination.MembershipProvider;
+
 /**
  * Utility to retrieve information about Kafka Consumer Group
  */
-public class KafkaConsumerAdminService {
+public class KafkaConsumerAdminService implements MembershipProvider {
     private final AdminClient adminClient;
     private final String consumerGroup;
 
     public KafkaConsumerAdminService(AdminClient adminClient, String consumerGroup) {
         this.adminClient = adminClient;
         this.consumerGroup = consumerGroup;
+    }
+
+    @Override
+    public Set<String> getActiveMembers() {
+        return getActiveConsumerGroupMembers();
     }
 
     public Set<String> getActiveConsumerGroupMembers() {
