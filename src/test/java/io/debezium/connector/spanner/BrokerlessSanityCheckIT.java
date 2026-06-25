@@ -111,6 +111,18 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
 
         LOGGER.info("Broker-less run produced {} record(s) with ops {}", records.size(), ops);
 
+        // Log every record so the full stream is visible: the 3 data changes (c/u/d) plus the
+        // delete's tombstone and the Spanner change-stream heartbeats that interleave them.
+        int idx = 0;
+        for (SourceRecord record : records) {
+            String op = "<none>";
+            String valueType = record.value() == null ? "null (tombstone)" : record.value().getClass().getSimpleName();
+            if (record.value() instanceof Struct && ((Struct) record.value()).schema().field("op") != null) {
+                op = (String) ((Struct) record.value()).get("op");
+            }
+            LOGGER.info("  record[{}] topic={} value={} op={}", idx++, record.topic(), valueType, op);
+        }
+
         assertThat(ops).containsExactly("c", "u", "d");
         // The delete is followed by a tombstone (null-valued) record.
         assertThat(records.stream().anyMatch(r -> r.value() == null)).isTrue();
