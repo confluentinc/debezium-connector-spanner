@@ -9,7 +9,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
 
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.kafka.internal.model.MessageTypeEnum;
 import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
 import io.debezium.connector.spanner.kafka.internal.model.SyncEventMetadata;
@@ -27,14 +27,14 @@ public class SyncEventHandler {
 
     private final TaskSyncContextHolder taskSyncContextHolder;
 
-    private final TaskSyncPublisher taskSyncPublisher;
+    private final TaskStatePublisher taskStatePublisher;
 
     private final BlockingConsumer<TaskStateChangeEvent> eventConsumer;
 
-    public SyncEventHandler(TaskSyncContextHolder taskSyncContextHolder, TaskSyncPublisher taskSyncPublisher,
+    public SyncEventHandler(TaskSyncContextHolder taskSyncContextHolder, TaskStatePublisher taskStatePublisher,
                             BlockingConsumer<TaskStateChangeEvent> eventConsumer) {
         this.taskSyncContextHolder = taskSyncContextHolder;
-        this.taskSyncPublisher = taskSyncPublisher;
+        this.taskStatePublisher = taskStatePublisher;
         this.eventConsumer = eventConsumer;
     }
 
@@ -131,7 +131,7 @@ public class SyncEventHandler {
         LOGGER.info("Task {} - SyncEventHandler sending response for new epoch",
                 taskSyncContextHolder.get().getTaskUid());
 
-        taskSyncPublisher.send(newContext.buildCurrentTaskSyncEvent());
+        taskStatePublisher.send(newContext.buildCurrentTaskSyncEvent());
         LOGGER.info("Task {} - SyncEventHandler sent response for new epoch",
                 taskSyncContextHolder.get().getTaskUid());
 

@@ -17,6 +17,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.exception.SpannerConnectorException;
 import io.debezium.connector.spanner.kafka.event.proto.SyncEventProtos;
 import io.debezium.connector.spanner.kafka.internal.model.MessageTypeEnum;
@@ -27,7 +28,7 @@ import io.debezium.connector.spanner.task.TaskSyncContextHolder;
 /**
  * Sends Sync Events with task internal state updates to Kafka Sync topic
  */
-public class TaskSyncPublisher {
+public class TaskSyncPublisher implements TaskStatePublisher {
     private static final Logger LOGGER = getLogger(TaskSyncPublisher.class);
 
     private final String topic;

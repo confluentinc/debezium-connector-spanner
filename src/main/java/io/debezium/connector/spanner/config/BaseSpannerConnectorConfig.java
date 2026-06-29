@@ -57,6 +57,35 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
         }
     }
 
+    public enum CoordinationMode implements EnumeratedValue {
+        KAFKA("kafka"),
+        BROKERLESS("brokerless");
+
+        private final String value;
+
+        CoordinationMode(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String getValue() {
+            return value;
+        }
+
+        public static CoordinationMode parse(String value) {
+            if (value == null) {
+                return KAFKA;
+            }
+            value = value.trim();
+            for (CoordinationMode option : values()) {
+                if (option.getValue().equalsIgnoreCase(value)) {
+                    return option;
+                }
+            }
+            return null;
+        }
+    }
+
     public static final String CONNECTOR_NAME_PROPERTY_NAME = "name";
     private static final String LOW_WATERMARK_ENABLED = "gcp.spanner.low-watermark.enabled";
     private static final String LOW_WATERMARK_UPDATE_PERIOD_MS = "gcp.spanner.low-watermark.update-period.ms";
@@ -142,6 +171,8 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
     private static final String TASKS_FAIL_OVERLOADED_CHECK_INTERVAL_PROPERTY_NAME = "tasks.fail.overloaded.check.interval";
 
     private static final String CONNECTOR_SPANNER_SYNC_TOPIC_MAX_MESSAGE_BYTES_PROPERTY_NAME = "connector.spanner.sync.max.message.bytes";
+
+    public static final String COORDINATION_MODE_PROPERTY_NAME = "connector.spanner.coordination.mode";
 
     protected static final Field LOW_WATERMARK_ENABLED_FIELD = Field.create(LOW_WATERMARK_ENABLED)
             .withDisplayName(LOW_WATERMARK_ENABLED)
@@ -658,6 +689,11 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withImportance(Importance.LOW)
             .withDescription("Path to the client certificate file for Spanner Omni connection");
 
+    public static final Field COORDINATION_MODE = Field.create(COORDINATION_MODE_PROPERTY_NAME)
+            .withDisplayName("Coordination mode")
+            .withEnum(CoordinationMode.class, CoordinationMode.KAFKA)
+            .withDescription("Mode of task coordination. Valid values are KAFKA or BROKERLESS. Default is KAFKA.");
+
     protected static final ConfigDefinition CONFIG_DEFINITION = ConfigDefinition.editor()
             .name("Spanner")
             .type(PROJECT_ID)
@@ -719,7 +755,8 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
                     TASKS_FAIL_OVERLOADED,
                     TASKS_FAIL_OVERLOADED_CHECK_INTERVAL,
                     SCALER_MONITOR_ENABLED,
-                    LOGGING_JSON_ENABLED)
+                    LOGGING_JSON_ENABLED,
+                    COORDINATION_MODE)
             .events(TABLE_EXCLUDE_LIST,
                     TABLE_INCLUDE_LIST,
                     CUSTOM_CONVERTERS,

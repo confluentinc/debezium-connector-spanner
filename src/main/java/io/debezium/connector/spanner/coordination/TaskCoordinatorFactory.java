@@ -1,0 +1,51 @@
+/*
+ * Copyright Debezium Authors.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */
+package io.debezium.connector.spanner.coordination;
+
+import java.util.function.Consumer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.debezium.connector.spanner.SpannerConnectorConfig;
+import io.debezium.connector.spanner.SpannerConnectorTask;
+import io.debezium.connector.spanner.brokerless.BrokerlessTaskCoordinator;
+import io.debezium.connector.spanner.brokerless.NoOpCoordinationProvisioner;
+import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
+import io.debezium.connector.spanner.kafka.KafkaTaskCoordinator;
+import io.debezium.connector.spanner.kafka.internal.KafkaInternalTopicAdminService;
+import io.debezium.connector.spanner.task.TaskSyncContextHolder;
+
+/**
+ * Selects partition coordination implementation based on config
+ */
+public class TaskCoordinatorFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskCoordinatorFactory.class);
+
+    private TaskCoordinatorFactory() {
+    }
+
+    public static TaskCoordinator create(SpannerConnectorConfig config,
+                                         SpannerConnectorTask task,
+                                         KafkaAdminClientFactory adminClientFactory,
+                                         TaskSyncContextHolder taskSyncContextHolder,
+                                         Consumer<RuntimeException> errorHandler) {
+        if (config.isBrokerlessCoordination()) {
+            LOGGER.info("Task {} - broker-less partition coordination", task.getTaskUid());
+            return new BrokerlessTaskCoordinator(task.getTaskUid());
+        }
+        LOGGER.info("Task {} - using Kafka partition coordination", task.getTaskUid());
+        return new KafkaTaskCoordinator(config, task, adminClientFactory, taskSyncContextHolder, errorHandler);
+    }
+
+    public static CoordinationProvisioner createProvisioner(SpannerConnectorConfig config) {
+        if (config.isBrokerlessCoordination()) {
+            return new NoOpCoordinationProvisioner();
+        }
+        return new KafkaInternalTopicAdminService(config);
+    }
+}

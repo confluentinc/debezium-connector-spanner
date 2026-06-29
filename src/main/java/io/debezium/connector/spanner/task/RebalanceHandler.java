@@ -9,7 +9,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.slf4j.Logger;
 
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
 import io.debezium.connector.spanner.kafka.internal.model.TaskState;
 import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
@@ -25,16 +25,16 @@ public class RebalanceHandler {
 
     private final TaskSyncContextHolder taskSyncContextHolder;
 
-    private final TaskSyncPublisher taskSyncPublisher;
+    private final TaskStatePublisher taskStatePublisher;
 
     private final LeaderAction leaderAction;
 
     private final LowWatermarkStampPublisher lowWatermarkStampPublisher;
 
-    public RebalanceHandler(TaskSyncContextHolder taskSyncContextHolder, TaskSyncPublisher taskSyncPublisher,
+    public RebalanceHandler(TaskSyncContextHolder taskSyncContextHolder, TaskStatePublisher taskStatePublisher,
                             LeaderAction leaderAction, LowWatermarkStampPublisher lowWatermarkStampPublisher) {
         this.taskSyncContextHolder = taskSyncContextHolder;
-        this.taskSyncPublisher = taskSyncPublisher;
+        this.taskStatePublisher = taskStatePublisher;
         this.leaderAction = leaderAction;
         this.lowWatermarkStampPublisher = lowWatermarkStampPublisher;
     }
@@ -99,7 +99,7 @@ public class RebalanceHandler {
                 rebalanceGenerationId);
 
         // Send the rebalance event.
-        taskSyncPublisher.send(taskSyncEvent);
+        taskStatePublisher.send(taskSyncEvent);
 
         LOGGER.info(
                 "processRebalancingEvent: Task {} rebalance answer has been sent for consumer ID {} and rebalance generation ID {}, num partitions {} num shared partitions {}",

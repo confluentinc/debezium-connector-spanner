@@ -9,6 +9,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Duration;
 
+import io.debezium.connector.spanner.coordination.LeaderElector;
+import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
+import io.debezium.connector.spanner.coordination.TaskCoordinator;
+import io.debezium.connector.spanner.coordination.TaskCoordinatorFactory;
+import io.debezium.connector.spanner.coordination.MembershipProvider;
 import org.slf4j.Logger;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
@@ -16,13 +22,6 @@ import io.debezium.connector.spanner.SpannerConnectorTask;
 import io.debezium.connector.spanner.db.metadata.SchemaRegistry;
 import io.debezium.connector.spanner.db.stream.ChangeStream;
 import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
-import io.debezium.connector.spanner.kafka.internal.KafkaConsumerAdminService;
-import io.debezium.connector.spanner.kafka.internal.ProducerFactory;
-import io.debezium.connector.spanner.kafka.internal.RebalancingConsumerFactory;
-import io.debezium.connector.spanner.kafka.internal.RebalancingEventListener;
-import io.debezium.connector.spanner.kafka.internal.SyncEventConsumerFactory;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncEventListener;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
 import io.debezium.connector.spanner.metrics.MetricsEventPublisher;
 import io.debezium.connector.spanner.processor.SpannerEventDispatcher;
 import io.debezium.connector.spanner.task.leader.LeaderAction;
@@ -46,15 +45,12 @@ public class SynchronizationTaskContext {
     private static final Logger LOGGER = getLogger(SynchronizationTaskContext.class);
 
     private final LeaderRebalanceStrategy leaderRebalanceStrategy = LeaderRebalanceStrategy.EQUAL_SHARING;
-    private final SyncEventConsumerFactory<String, byte[]> syncEventConsumerFactory;
-    private final RebalancingConsumerFactory<?, ?> rebalancingConsumerFactory;
-    private final ProducerFactory<String, byte[]> producerFactory;
 
     private final LeaderAction leaderAction;
 
-    private final RebalancingEventListener rebalancingEventListener;
-    private final TaskSyncEventListener taskSyncEventListener;
-    private final TaskSyncPublisher taskSyncPublisher;
+    private final LeaderElector leaderElector;
+    private final TaskStateSubscriber taskStateSubscriber;
+    private final TaskStatePublisher taskStatePublisher;
 
     private final TaskSyncContextHolder taskSyncContextHolder;
 
@@ -93,10 +89,6 @@ public class SynchronizationTaskContext {
                                       Runnable finishingHandler,
                                       MetricsEventPublisher metricsEventPublisher,
                                       LowWatermarkHolder lowWatermarkHolder) {
-        final String rebalancingTopic = connectorConfig.rebalancingTopic();
-        final String taskSyncTopic = connectorConfig.taskSyncTopic();
-        final String connectorName = connectorConfig.getConnectorName();
-
         this.task = task;
 
         this.connectorConfig = connectorConfig;
@@ -107,17 +99,14 @@ public class SynchronizationTaskContext {
 
         this.schemaRegistry = schemaRegistry;
 
-        this.syncEventConsumerFactory = new SyncEventConsumerFactory<>(connectorConfig, false);
-        this.rebalancingConsumerFactory = new RebalancingConsumerFactory<>(connectorConfig);
-        this.producerFactory = new ProducerFactory(connectorConfig);
-
         this.taskSyncContextHolder = new TaskSyncContextHolder(metricsEventPublisher);
 
-        this.taskSyncPublisher = new TaskSyncPublisher(task.getTaskUid(), taskSyncTopic, connectorConfig.syncEventPublisherWaitingTimeout(), producerFactory,
-                taskSyncContextHolder,
-                this::onError);
-
-        final KafkaConsumerAdminService kafkaAdminService = new KafkaConsumerAdminService(adminClientFactory.getAdminClient(), connectorName);
+        TaskCoordinator coordination = TaskCoordinatorFactory.create(
+                connectorConfig, task, adminClientFactory, taskSyncContextHolder, this::onError);
+        this.taskStatePublisher = coordination.statePublisher();
+        this.taskStateSubscriber = coordination.stateSubscriber();
+        this.leaderElector = coordination.leaderElector();
+        final MembershipProvider membershipProvider = coordination.membershipProvider();
 
         this.partitionFactory = new PartitionFactory(partitionOffsetProvider, metricsEventPublisher);
 
@@ -135,23 +124,17 @@ public class SynchronizationTaskContext {
                 ? new TaskPartitionEqualSharingRebalancer()
                 : new TaskPartitionGreedyLeaderRebalancer();
 
-        this.leaderAction = new LeaderAction(taskSyncContextHolder, kafkaAdminService, leaderService,
-                taskPartitionRebalancer, taskSyncPublisher, this::onError);
+        this.leaderAction = new LeaderAction(taskSyncContextHolder, membershipProvider, leaderService,
+                taskPartitionRebalancer, taskStatePublisher, this::onError);
 
-        this.taskSyncEventListener = new TaskSyncEventListener(task.getTaskUid(), taskSyncTopic, syncEventConsumerFactory,
-                true, this::onError);
-
-        this.rebalancingEventListener = new RebalancingEventListener(task, connectorName, rebalancingTopic,
-                connectorConfig.rebalancingTaskWaitingTimeout(), rebalancingConsumerFactory, this::onError);
-
-        this.taskStateChangeEventHandler = new TaskStateChangeEventHandler(taskSyncContextHolder, taskSyncPublisher,
+        this.taskStateChangeEventHandler = new TaskStateChangeEventHandler(taskSyncContextHolder, taskStatePublisher,
                 changeStream, partitionFactory, spannerEventDispatcher, this::onFinish, connectorConfig, this::onError);
 
-        this.rebalanceHandler = new RebalanceHandler(taskSyncContextHolder, taskSyncPublisher,
+        this.rebalanceHandler = new RebalanceHandler(taskSyncContextHolder, taskStatePublisher,
                 leaderAction, lowWatermarkStampPublisher);
 
         this.syncEventHandler = new SyncEventHandler(taskSyncContextHolder,
-                taskSyncPublisher, this::publishEvent);
+                taskStatePublisher, this::publishEvent);
 
         final LowWatermarkCalculator lowWatermarkCalculator = new LowWatermarkCalculator(connectorConfig, taskSyncContextHolder, partitionOffsetProvider);
 
@@ -170,20 +153,20 @@ public class SynchronizationTaskContext {
 
             this.rebalanceHandler.init();
 
-            this.taskSyncEventListener.subscribe(syncEventHandler::updateCurrentOffset);
+            this.taskStateSubscriber.subscribe(syncEventHandler::updateCurrentOffset);
 
-            this.taskSyncEventListener.subscribe(syncEventHandler::process);
+            this.taskStateSubscriber.subscribe(syncEventHandler::process);
 
-            this.taskSyncEventListener.subscribe(syncEventHandler::processPreviousStates);
+            this.taskStateSubscriber.subscribe(syncEventHandler::processPreviousStates);
 
-            this.taskSyncEventListener.start();
+            this.taskStateSubscriber.start();
 
             final Duration awaitTimeout = connectorConfig.awaitInitializationTimeout();
 
             this.taskSyncContextHolder.awaitInitialization(awaitTimeout);
 
             LOGGER.info("{}, connecting to the rebalance topic", task.getTaskUid());
-            this.rebalancingEventListener
+            this.leaderElector
                     .listen(metadata -> rebalanceHandler.process(metadata.isLeader(), metadata.getConsumerId(), metadata.getRebalanceGenerationId()));
 
             LOGGER.info("{}, Start Low Watermark Calculation Job", task.getTaskUid());
@@ -222,19 +205,19 @@ public class SynchronizationTaskContext {
 
         try {
             try {
-                this.rebalancingEventListener.shutdown();
+                this.leaderElector.shutdown();
             }
             catch (Exception e) {
                 LOGGER.error("Task {}, exception during rebalancing event listener shutdown", e);
                 throw e;
             }
-            LOGGER.info("Task {}, Shut down rebalancingEventListener", this.taskSyncContextHolder.get().getTaskUid());
+            LOGGER.info("Task {}, Shut down leaderElector", this.taskSyncContextHolder.get().getTaskUid());
 
-            this.taskSyncEventListener.shutdown();
-            LOGGER.info("Task {}, Shut down TaskSyncEventListener", this.taskSyncContextHolder.get().getTaskUid());
+            this.taskStateSubscriber.shutdown();
+            LOGGER.info("Task {}, Shut down TaskStateSubscriber", this.taskSyncContextHolder.get().getTaskUid());
 
-            this.taskSyncPublisher.close();
-            LOGGER.info("Task {}, Shut down TaskSyncPublisher", this.taskSyncContextHolder.get().getTaskUid());
+            this.taskStatePublisher.close();
+            LOGGER.info("Task {}, Shut down taskStatePublisher", this.taskSyncContextHolder.get().getTaskUid());
 
             this.taskStateChangeEventProcessor.stopProcessing();
             LOGGER.info("Task {}, Shut down TaskStateChangeEventProcessor", this.taskSyncContextHolder.get().getTaskUid());

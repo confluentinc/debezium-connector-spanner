@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import io.debezium.DebeziumException;
+import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
 import io.debezium.connector.spanner.exception.SpannerConnectorException;
 import io.debezium.connector.spanner.function.BlockingBiConsumer;
 import io.debezium.connector.spanner.kafka.event.proto.SyncEventProtos;
@@ -33,7 +34,7 @@ import io.debezium.util.Metronome;
 import io.debezium.util.Stopwatch;
 
 /** Consumes messages from the Sync Topic */
-public class TaskSyncEventListener {
+public class TaskSyncEventListener implements TaskStateSubscriber {
     private static final Logger LOGGER = getLogger(TaskSyncEventListener.class);
     private final String consumerGroup;
     private final String topic;

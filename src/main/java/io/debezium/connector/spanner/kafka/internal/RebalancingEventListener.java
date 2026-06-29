@@ -19,6 +19,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 
 import io.debezium.connector.spanner.SpannerConnectorTask;
+import io.debezium.connector.spanner.coordination.LeaderElector;
 import io.debezium.connector.spanner.exception.SpannerConnectorException;
 import io.debezium.connector.spanner.kafka.internal.model.RebalanceEventMetadata;
 import io.debezium.connector.spanner.task.utils.ResettableDelayedAction;
@@ -30,7 +31,7 @@ import io.debezium.function.BlockingConsumer;
  * is current task a Leader or not
  * further for processing
  */
-public class RebalancingEventListener {
+public class RebalancingEventListener implements LeaderElector {
 
     private static final Logger LOGGER = getLogger(RebalancingEventListener.class);
 

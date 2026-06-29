@@ -23,8 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.debezium.config.Configuration;
 import io.debezium.config.ConfigurationNames;
 import io.debezium.connector.spanner.config.validation.ConfigurationValidator;
-import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
-import io.debezium.connector.spanner.kafka.internal.KafkaInternalTopicAdminService;
+import io.debezium.connector.spanner.coordination.TaskCoordinatorFactory;
 import io.debezium.connector.spanner.task.LoggerUtils;
 import io.debezium.connector.spanner.task.scaler.TaskScalerMonitor;
 import io.debezium.connector.spanner.task.scaler.TaskScalerMonitorFactory;
@@ -116,11 +115,7 @@ public class SpannerConnector extends SourceConnector {
 
     @VisibleForTesting
     void createInternalTopics(SpannerConnectorConfig config) {
-        KafkaAdminClientFactory adminClientFactory = new KafkaAdminClientFactory(config);
-        final KafkaInternalTopicAdminService rebalanceTopicAdminService = new KafkaInternalTopicAdminService(adminClientFactory.getAdminClient(), config);
-        rebalanceTopicAdminService.createAdjustRebalanceTopic();
-        rebalanceTopicAdminService.createVerifySyncTopic();
-        adminClientFactory.close();
+        TaskCoordinatorFactory.createProvisioner(config).ensureReady();
     }
 
 }
