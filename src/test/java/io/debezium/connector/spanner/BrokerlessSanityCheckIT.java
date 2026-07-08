@@ -69,7 +69,7 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
     }
 
     @Test
-    public void shouldStreamUpdatesWithoutLowWatermarkEnabled() throws InterruptedException {
+    public void shouldStreamUpdatesWithLowWatermarkEnabled() throws InterruptedException {
         Instant testStart = Instant.now();
         final Configuration config = Configuration.copy(baseConfig)
                 .with("gcp.spanner.change.stream", changeStreamName)
