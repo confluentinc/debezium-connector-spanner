@@ -1,0 +1,38 @@
+/*
+ * Copyright Debezium Authors.
+ *
+ * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
+ */
+package io.debezium.connector.spanner.brokerless;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.jupiter.api.Test;
+
+import io.debezium.connector.spanner.kafka.internal.model.RebalanceEventMetadata;
+
+class SelfLeaderElectorTest {
+
+    @Test
+    void alwaysElectsSelfAsLeaderAtGenerationZero() throws InterruptedException {
+        SelfLeaderElector elector = new SelfLeaderElector("consumer-1");
+        AtomicReference<RebalanceEventMetadata> received = new AtomicReference<>();
+
+        elector.listen(received::set);
+
+        RebalanceEventMetadata metadata = received.get();
+        assertEquals("consumer-1", metadata.getConsumerId());
+        assertEquals(0L, metadata.getRebalanceGenerationId());
+        assertTrue(metadata.isLeader());
+    }
+
+    @Test
+    void shutdownDoesNotThrow() {
+        SelfLeaderElector elector = new SelfLeaderElector("consumer-1");
+
+        elector.shutdown();
+    }
+}
