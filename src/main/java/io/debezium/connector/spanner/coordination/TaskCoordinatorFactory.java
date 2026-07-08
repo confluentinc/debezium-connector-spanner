@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
+import io.debezium.connector.spanner.brokerless.BrokerlessPartitionInfoProvider;
 import io.debezium.connector.spanner.brokerless.BrokerlessTaskCoordinator;
 import io.debezium.connector.spanner.brokerless.NoOpCoordinationProvisioner;
 import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
+import io.debezium.connector.spanner.kafka.KafkaPartitionInfoProvider;
 import io.debezium.connector.spanner.kafka.KafkaTaskCoordinator;
 import io.debezium.connector.spanner.kafka.internal.KafkaInternalTopicAdminService;
 import io.debezium.connector.spanner.task.TaskSyncContextHolder;
@@ -47,5 +49,13 @@ public class TaskCoordinatorFactory {
             return new NoOpCoordinationProvisioner();
         }
         return new KafkaInternalTopicAdminService(config);
+    }
+
+    public static PartitionInfoProvider createPartitionInfoProvider(SpannerConnectorConfig config,
+                                                                    KafkaAdminClientFactory adminClientFactory) {
+        if (config.isBrokerlessCoordination()) {
+            return new BrokerlessPartitionInfoProvider();
+        }
+        return new KafkaPartitionInfoProvider(adminClientFactory.getAdminClient());
     }
 }

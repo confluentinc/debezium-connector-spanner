@@ -9,16 +9,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.time.Duration;
 
-import io.debezium.connector.spanner.coordination.LeaderElector;
-import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
-import io.debezium.connector.spanner.coordination.TaskStatePublisher;
-import io.debezium.connector.spanner.coordination.TaskCoordinator;
-import io.debezium.connector.spanner.coordination.TaskCoordinatorFactory;
-import io.debezium.connector.spanner.coordination.MembershipProvider;
 import org.slf4j.Logger;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
+import io.debezium.connector.spanner.coordination.LeaderElector;
+import io.debezium.connector.spanner.coordination.MembershipProvider;
+import io.debezium.connector.spanner.coordination.TaskCoordinator;
+import io.debezium.connector.spanner.coordination.TaskCoordinatorFactory;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
+import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
 import io.debezium.connector.spanner.db.metadata.SchemaRegistry;
 import io.debezium.connector.spanner.db.stream.ChangeStream;
 import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;

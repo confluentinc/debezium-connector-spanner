@@ -25,11 +25,13 @@ import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.slf4j.Logger;
 
+import io.debezium.connector.spanner.coordination.PartitionInfoProvider;
+
 /**
  * Uses Kafka Admin Client to receive collection of partitions
  * for Kafka topic.
  */
-public class KafkaPartitionInfoProvider {
+public class KafkaPartitionInfoProvider implements PartitionInfoProvider {
     private static final Logger LOGGER = getLogger(KafkaPartitionInfoProvider.class);
     private final AdminClient adminClient;
 
@@ -37,6 +39,7 @@ public class KafkaPartitionInfoProvider {
         this.adminClient = adminClient;
     }
 
+    @Override
     public Collection<Integer> getPartitions(String topicName, Optional<Integer> numPartitions) throws ExecutionException, InterruptedException {
 
         try {

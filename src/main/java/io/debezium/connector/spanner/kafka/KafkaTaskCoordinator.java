@@ -9,18 +9,18 @@ import java.util.function.Consumer;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
-import io.debezium.connector.spanner.coordination.TaskStatePublisher;
-import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
 import io.debezium.connector.spanner.coordination.LeaderElector;
 import io.debezium.connector.spanner.coordination.MembershipProvider;
 import io.debezium.connector.spanner.coordination.TaskCoordinator;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
+import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
+import io.debezium.connector.spanner.kafka.internal.KafkaConsumerAdminService;
 import io.debezium.connector.spanner.kafka.internal.ProducerFactory;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
-import io.debezium.connector.spanner.kafka.internal.SyncEventConsumerFactory;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncEventListener;
 import io.debezium.connector.spanner.kafka.internal.RebalancingConsumerFactory;
 import io.debezium.connector.spanner.kafka.internal.RebalancingEventListener;
-import io.debezium.connector.spanner.kafka.internal.KafkaConsumerAdminService;
+import io.debezium.connector.spanner.kafka.internal.SyncEventConsumerFactory;
+import io.debezium.connector.spanner.kafka.internal.TaskSyncEventListener;
+import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
 import io.debezium.connector.spanner.task.TaskSyncContextHolder;
 
 /**

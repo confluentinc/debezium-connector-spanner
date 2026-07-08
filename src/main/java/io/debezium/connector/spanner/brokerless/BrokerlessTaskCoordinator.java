@@ -8,11 +8,11 @@ package io.debezium.connector.spanner.brokerless;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.debezium.connector.spanner.coordination.TaskStatePublisher;
-import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
 import io.debezium.connector.spanner.coordination.LeaderElector;
 import io.debezium.connector.spanner.coordination.MembershipProvider;
 import io.debezium.connector.spanner.coordination.TaskCoordinator;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
+import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
 
 /**
  * Broker-less implementation of the partition-coordination SPI
