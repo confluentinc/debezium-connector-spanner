@@ -60,20 +60,6 @@
                 <updatePolicy>never</updatePolicy>
             </snapshots>
         </repository>
-        <!-- Local-only: direct Maven Central (id NOT in settings.xml mirrorOf=central,...),
-             so 3.6.0.Final modules missing from the CodeArtifact mirror (e.g. debezium-openlineage)
-             resolve straight from Central. Remove before pushing. -->
-        <repository>
-            <id>maven-central-direct</id>
-            <name>Maven Central (direct, bypass mirror)</name>
-            <url>https://repo1.maven.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
     </repositories>
 
     <dependencyManagement>
