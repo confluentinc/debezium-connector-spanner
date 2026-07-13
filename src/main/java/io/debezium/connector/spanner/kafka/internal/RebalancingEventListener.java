@@ -69,6 +69,7 @@ public class RebalancingEventListener implements LeaderElector {
         this.resettableDelayedAction = new ResettableDelayedAction("rebalance-delayed-action", rebalancingTaskWaitingTimeout);
     }
 
+    @Override
     public void listen(BlockingConsumer<RebalanceEventMetadata> action) {
         this.rebalancingAction = action;
         this.consumer = consumerFactory.createSubscribeConsumer(consumerGroup, topic, new ConsumerRebalanceListener() {
@@ -165,6 +166,7 @@ public class RebalancingEventListener implements LeaderElector {
         return partitions.stream().anyMatch(x -> x.partition() == 0);
     }
 
+    @Override
     public void shutdown() {
         LOGGER.info("Task {} - shutting down rebalancing event listener", task.getTaskUid());
         this.resettableDelayedAction.clear();

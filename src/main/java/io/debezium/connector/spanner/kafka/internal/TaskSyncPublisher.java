@@ -62,6 +62,7 @@ public class TaskSyncPublisher implements TaskStatePublisher {
         }
     }
 
+    @Override
     public void send(TaskSyncEvent taskSyncEvent) {
         if (bufferedPublisher == null) {
             publishSyncEvent(taskSyncEvent);
@@ -101,6 +102,7 @@ public class TaskSyncPublisher implements TaskStatePublisher {
         }
     }
 
+    @Override
     public void close() {
         if (bufferedPublisher != null) {
             bufferedPublisher.close();
@@ -108,6 +110,7 @@ public class TaskSyncPublisher implements TaskStatePublisher {
         producer.close();
     }
 
+    @Override
     public Instant getLastTime() {
         return lastTime;
     }

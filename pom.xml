@@ -7,7 +7,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.confluent</groupId>
     <artifactId>debezium-connector-spanner</artifactId>
     <version>3.6.0.Final</version>
     <name>Debezium Google Spanner Kafka Connector Plugin</name>

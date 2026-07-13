@@ -68,6 +68,7 @@ public class TaskSyncEventListener implements TaskStateSubscriber {
         this.clock = Clock.system();
     }
 
+    @Override
     public void subscribe(BlockingBiConsumer<TaskSyncEvent, SyncEventMetadata> eventConsumer) {
         eventConsumers.add(eventConsumer);
     }
@@ -76,6 +77,7 @@ public class TaskSyncEventListener implements TaskStateSubscriber {
         eventConsumers.remove(eventConsumer);
     }
 
+    @Override
     public void start() throws InterruptedException {
         // or take all partition list and sub to them
 
@@ -261,6 +263,7 @@ public class TaskSyncEventListener implements TaskStateSubscriber {
         }
     }
 
+    @Override
     public void shutdown() {
         LOGGER.info(
                 "Stopping TaskSyncEventListener for Task Uid {}",
