@@ -5,9 +5,9 @@
  */
 package io.debezium.connector.spanner.coordination;
 
+import io.debezium.connector.spanner.coordination.kafka.internal.model.SyncEventMetadata;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 import io.debezium.connector.spanner.function.BlockingBiConsumer;
-import io.debezium.connector.spanner.kafka.internal.model.SyncEventMetadata;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
 
 /**
  * SPI for receiving partition-ownership state published by peers.

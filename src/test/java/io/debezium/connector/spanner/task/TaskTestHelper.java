@@ -17,10 +17,10 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import io.debezium.connector.spanner.kafka.internal.model.MessageTypeEnum;
-import io.debezium.connector.spanner.kafka.internal.model.PartitionState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.MessageTypeEnum;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 
 public class TaskTestHelper {
     private TaskTestHelper() {

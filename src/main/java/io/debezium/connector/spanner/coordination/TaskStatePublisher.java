@@ -7,7 +7,7 @@ package io.debezium.connector.spanner.coordination;
 
 import java.time.Instant;
 
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 
 /**
  * SPI for publishing this task's partition-ownership state so peers can observe it.

@@ -12,13 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
-import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
-import io.debezium.connector.spanner.kafka.KafkaPartitionInfoProvider;
-import io.debezium.connector.spanner.kafka.KafkaTaskCoordinator;
-import io.debezium.connector.spanner.kafka.internal.KafkaInternalTopicAdminService;
-import io.debezium.connector.spanner.singletask.NoOpCoordinationProvisioner;
-import io.debezium.connector.spanner.singletask.SingleTaskCoordinator;
-import io.debezium.connector.spanner.singletask.SingleTaskPartitionInfoProvider;
+import io.debezium.connector.spanner.coordination.kafka.KafkaAdminClientFactory;
+import io.debezium.connector.spanner.coordination.kafka.KafkaPartitionInfoProvider;
+import io.debezium.connector.spanner.coordination.kafka.KafkaTaskCoordinator;
+import io.debezium.connector.spanner.coordination.kafka.internal.KafkaInternalTopicAdminService;
+import io.debezium.connector.spanner.coordination.singletask.NoOpCoordinationProvisioner;
+import io.debezium.connector.spanner.coordination.singletask.SingleTaskCoordinator;
+import io.debezium.connector.spanner.coordination.singletask.SingleTaskPartitionInfoProvider;
 import io.debezium.connector.spanner.task.TaskSyncContextHolder;
 
 /**

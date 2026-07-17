@@ -8,8 +8,8 @@ package io.debezium.connector.spanner.task.scaler;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.debezium.connector.spanner.kafka.internal.TaskSyncEventListener;
-import io.debezium.connector.spanner.kafka.internal.model.MessageTypeEnum;
+import io.debezium.connector.spanner.coordination.kafka.internal.TaskSyncEventListener;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.MessageTypeEnum;
 
 /**
  * This class returns the initial task count upon startup. On each "UPDATE_EPOCH" Sync Event message received,

@@ -7,9 +7,9 @@ package io.debezium.connector.spanner.task.scaler;
 
 import static io.debezium.connector.spanner.task.TaskStateUtil.inProgressPartitionState;
 
-import io.debezium.connector.spanner.kafka.internal.model.PartitionState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 
 /**
  * Utility to calculate metrics required for

@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.debezium.connector.spanner.kafka.internal.model.PartitionState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
 import io.debezium.connector.spanner.task.TaskSyncContext;
 
 /**

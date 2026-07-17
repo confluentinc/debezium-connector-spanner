@@ -5,7 +5,7 @@
  */
 package io.debezium.connector.spanner.coordination;
 
-import io.debezium.connector.spanner.kafka.internal.model.RebalanceEventMetadata;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.RebalanceEventMetadata;
 import io.debezium.function.BlockingConsumer;
 
 /**
