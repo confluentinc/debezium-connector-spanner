@@ -13,31 +13,31 @@ import org.junit.jupiter.api.Test;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
-import io.debezium.connector.spanner.brokerless.BrokerlessPartitionInfoProvider;
-import io.debezium.connector.spanner.brokerless.BrokerlessTaskCoordinator;
-import io.debezium.connector.spanner.brokerless.NoOpCoordinationProvisioner;
 import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
 import io.debezium.connector.spanner.kafka.KafkaPartitionInfoProvider;
+import io.debezium.connector.spanner.singletask.NoOpCoordinationProvisioner;
+import io.debezium.connector.spanner.singletask.SingleTaskCoordinator;
+import io.debezium.connector.spanner.singletask.SingleTaskPartitionInfoProvider;
 
 class TaskCoordinatorFactoryTest {
 
     @Test
-    void createReturnsBrokerlessTaskCoordinatorWhenBrokerlessCoordinationEnabled() {
+    void createReturnsSingleTaskTaskCoordinatorWhenSingleTaskCoordinationEnabled() {
         SpannerConnectorConfig config = mock(SpannerConnectorConfig.class);
-        when(config.isBrokerlessCoordination()).thenReturn(true);
+        when(config.isSingleTaskCoordination()).thenReturn(true);
         SpannerConnectorTask task = mock(SpannerConnectorTask.class);
         when(task.getTaskUid()).thenReturn("task-1");
 
         TaskCoordinator coordinator = TaskCoordinatorFactory.create(config, task, null, null, ex -> {
         });
 
-        assertInstanceOf(BrokerlessTaskCoordinator.class, coordinator);
+        assertInstanceOf(SingleTaskCoordinator.class, coordinator);
     }
 
     @Test
-    void createProvisionerReturnsNoOpWhenBrokerlessCoordinationEnabled() {
+    void createProvisionerReturnsNoOpWhenSingleTaskCoordinationEnabled() {
         SpannerConnectorConfig config = mock(SpannerConnectorConfig.class);
-        when(config.isBrokerlessCoordination()).thenReturn(true);
+        when(config.isSingleTaskCoordination()).thenReturn(true);
 
         CoordinationProvisioner provisioner = TaskCoordinatorFactory.createProvisioner(config);
 
@@ -45,19 +45,19 @@ class TaskCoordinatorFactoryTest {
     }
 
     @Test
-    void createPartitionInfoProviderReturnsBrokerlessImplWhenBrokerlessCoordinationEnabled() {
+    void createPartitionInfoProviderReturnsSingleTaskImplWhenSingleTaskCoordinationEnabled() {
         SpannerConnectorConfig config = mock(SpannerConnectorConfig.class);
-        when(config.isBrokerlessCoordination()).thenReturn(true);
+        when(config.isSingleTaskCoordination()).thenReturn(true);
 
         PartitionInfoProvider provider = TaskCoordinatorFactory.createPartitionInfoProvider(config, null);
 
-        assertInstanceOf(BrokerlessPartitionInfoProvider.class, provider);
+        assertInstanceOf(SingleTaskPartitionInfoProvider.class, provider);
     }
 
     @Test
-    void createPartitionInfoProviderReturnsKafkaImplWhenBrokerlessCoordinationDisabled() {
+    void createPartitionInfoProviderReturnsKafkaImplWhenSingleTaskCoordinationDisabled() {
         SpannerConnectorConfig config = mock(SpannerConnectorConfig.class);
-        when(config.isBrokerlessCoordination()).thenReturn(false);
+        when(config.isSingleTaskCoordination()).thenReturn(false);
         KafkaAdminClientFactory adminClientFactory = mock(KafkaAdminClientFactory.class);
 
         PartitionInfoProvider provider = TaskCoordinatorFactory.createPartitionInfoProvider(config, adminClientFactory);

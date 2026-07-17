@@ -6,8 +6,13 @@
 package io.debezium.connector.spanner.coordination;
 
 /**
- * Provides shared infrastructure for the coordination implementation, once at startup
+ * SPI for provisioning shared infrastructure the coordination implementation depends on.
  */
 public interface CoordinationProvisioner {
+
+    /**
+     * Creates or validates required infrastructure once at startup, before any other coordination
+     * component is used.
+     */
     void ensureReady();
 }

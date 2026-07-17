@@ -180,7 +180,7 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         final SourceInfoFactory sourceInfoFactory = new SourceInfoFactory(connectorConfig, lowWatermarkHolder);
 
-        this.adminClientFactory = connectorConfig.isBrokerlessCoordination() ? null : new KafkaAdminClientFactory(connectorConfig);
+        this.adminClientFactory = connectorConfig.isSingleTaskCoordination() ? null : new KafkaAdminClientFactory(connectorConfig);
         final PartitionInfoProvider partitionInfoProvider = TaskCoordinatorFactory.createPartitionInfoProvider(connectorConfig, adminClientFactory);
 
         final PartitionOffsetProvider partitionOffsetProvider = new PartitionOffsetProvider(

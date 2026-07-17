@@ -349,7 +349,7 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
         return CoordinationMode.parse(getConfig().getString(COORDINATION_MODE));
     }
 
-    public boolean isBrokerlessCoordination() {
-        return CoordinationMode.BROKERLESS == coordinationMode();
+    public boolean isSingleTaskCoordination() {
+        return CoordinationMode.SINGLETASK == coordinationMode();
     }
 }

@@ -15,5 +15,9 @@ import java.util.concurrent.ExecutionException;
  */
 public interface PartitionInfoProvider {
 
+    /**
+     * Resolves the partition ids of the given topic, provisioning it first if it doesn't already
+     * exist.
+     */
     Collection<Integer> getPartitions(String topicName, Optional<Integer> numPartitions) throws ExecutionException, InterruptedException;
 }

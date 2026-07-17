@@ -10,13 +10,22 @@ import java.time.Instant;
 import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
 
 /**
- * SPI for publishing task's partition-ownership state
+ * SPI for publishing this task's partition-ownership state so peers can observe it.
  */
 public interface TaskStatePublisher {
 
+    /**
+     * Publishes this task's current partition-ownership state.
+     */
     void send(TaskSyncEvent taskSyncEvent);
 
+    /**
+     * Releases any resources held for publishing.
+     */
     void close();
 
+    /**
+     * Returns the timestamp of the most recent successful publish.
+     */
     Instant getLastTime();
 }

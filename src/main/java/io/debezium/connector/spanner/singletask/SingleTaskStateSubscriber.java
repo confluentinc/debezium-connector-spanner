@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package io.debezium.connector.spanner.brokerless;
+package io.debezium.connector.spanner.singletask;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -17,10 +17,16 @@ import io.debezium.connector.spanner.kafka.internal.model.SyncEventMetadata;
 import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
 
 /**
- * Task state subscriber for broker-less implementation
+ * Task state subscriber for single-task implementation. Kafka mode's {@code TaskSyncEventListener}
+ * drains the {@code _connector_sync} topic backlog before signaling
+ * {@code canInitiateRebalancing} whereas single-task mode has no topic and no peer state to drain, so
+ * {@link #start()} delivers a {@code null} event with {@code canInitiateRebalancing=true} to every
+ * subscriber synchronously and immediately. Without this, {@code SyncEventHandler
+ * .processPreviousStates()} would never flip to {@code INITIAL_INCREMENTED_STATE_COMPLETED} and the
+ * connector would deadlock at startup.
  */
-public class BrokerlessTaskStateSubscriber implements TaskStateSubscriber {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BrokerlessTaskStateSubscriber.class);
+public class SingleTaskStateSubscriber implements TaskStateSubscriber {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SingleTaskStateSubscriber.class);
     private final List<BlockingBiConsumer<TaskSyncEvent, SyncEventMetadata>> consumers = new CopyOnWriteArrayList<>();
 
     @Override
@@ -34,7 +40,7 @@ public class BrokerlessTaskStateSubscriber implements TaskStateSubscriber {
         for (BlockingBiConsumer<TaskSyncEvent, SyncEventMetadata> consumer : consumers) {
             consumer.accept(null, metadata);
         }
-        LOGGER.info("Broker-less coordination: delivered initialization signal to {} consumer(s)", consumers.size());
+        LOGGER.info("Single-task coordination: delivered initialization signal to {} consumer(s)", consumers.size());
     }
 
     @Override

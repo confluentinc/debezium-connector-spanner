@@ -9,11 +9,19 @@ import io.debezium.connector.spanner.kafka.internal.model.RebalanceEventMetadata
 import io.debezium.function.BlockingConsumer;
 
 /**
- * SPI for leader election
+ * SPI for determining leadership and reacting to membership rebalances. Implementations invoke a
+ * registered callback with the outcome of each rebalance the task participates in.
  */
 public interface LeaderElector {
 
+    /**
+     * Registers the callback invoked with each rebalance's outcome which includes
+     * this task's member id, the rebalance generation, and whether this task is leader.
+     */
     void listen(BlockingConsumer<RebalanceEventMetadata> action);
 
+    /**
+     * Stops listening for rebalances and releases held resources.
+     */
     void shutdown();
 }

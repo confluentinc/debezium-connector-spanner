@@ -29,15 +29,15 @@ import io.debezium.connector.spanner.util.Database;
 import io.debezium.embedded.async.AbstractAsyncEngineConnectorTest;
 import io.debezium.util.Testing;
 
-public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
+public class SingleTaskSanityCheckIT extends AbstractAsyncEngineConnectorTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BrokerlessSanityCheckIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SingleTaskSanityCheckIT.class);
 
     private static final Database database = Database.TEST_DATABASE;
     private static final Connection databaseConnection = database.getConnection();
 
-    private static final String tableName = "brokerless_sanity_table";
-    private static final String changeStreamName = "brokerlessSanityChangeStream";
+    private static final String tableName = "singletask_sanity_table";
+    private static final String changeStreamName = "singleTaskSanityChangeStream";
 
     private static final Configuration baseConfig = Configuration.create()
             .with("gcp.spanner.instance.id", database.getInstanceId())
@@ -45,8 +45,8 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
             .with("gcp.spanner.database.id", database.getDatabaseId())
             .with("gcp.spanner.emulator.host", "http://localhost:9010")
             .with("offset.storage", "org.apache.kafka.connect.storage.MemoryOffsetBackingStore")
-            // The whole point: broker-less coordination. No bootstrap.servers anywhere.
-            .with("connector.spanner.coordination.mode", "brokerless")
+            // The whole point: single-task coordination. No bootstrap.servers anywhere.
+            .with("connector.spanner.coordination.mode", "singletask")
             .with("tasks.max", 1)
             .with("gcp.spanner.low-watermark.enabled", true)
             // Short interval so a watermark stamp record is emitted within the test's wait window.
@@ -59,7 +59,7 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
         Testing.Print.enable();
         databaseConnection.createTable(tableName + "(id int64, name string(100)) primary key(id)");
         databaseConnection.createChangeStream(changeStreamName, tableName);
-        Testing.print("BrokerlessSanityCheckIT is ready (no Kafka broker)...");
+        Testing.print("SingleTaskSanityCheckIT is ready (no Kafka broker)...");
     }
 
     @AfterAll
@@ -73,7 +73,7 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
         Instant testStart = Instant.now();
         final Configuration config = Configuration.copy(baseConfig)
                 .with("gcp.spanner.change.stream", changeStreamName)
-                .with("name", tableName + "_brokerless_test")
+                .with("name", tableName + "_singletask_test")
                 .with("gcp.spanner.start.time", DateTimeFormatter.ISO_INSTANT.format(testStart))
                 .build();
 
@@ -90,8 +90,8 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
         assertThat(records.stream().anyMatch(r -> r.value() == null)).isTrue();
 
         // Proves the watermark stamp path (LowWatermarkStampPublisher -> SpannerEventDispatcher ->
-        // BrokerlessPartitionInfoProvider) runs to completion without the null-AdminClient NPE that
-        // used to crash the connector in broker-less mode.
+        // SingleTaskPartitionInfoProvider) runs to completion without the null-AdminClient NPE that
+        // used to crash the connector in single-task mode.
         assertThat(ops).contains("m");
 
         // Every value-bearing record (data change or stamp) carries a populated, advancing
@@ -106,7 +106,7 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
         Instant testStart = Instant.now();
         final Configuration config = Configuration.copy(baseConfig)
                 .with("gcp.spanner.change.stream", changeStreamName)
-                .with("name", tableName + "_brokerless_test_watermark_disabled")
+                .with("name", tableName + "_singletask_test_watermark_disabled")
                 .with("gcp.spanner.start.time", DateTimeFormatter.ISO_INSTANT.format(testStart))
                 .with("gcp.spanner.low-watermark.enabled", false)
                 .build();
@@ -143,7 +143,7 @@ public class BrokerlessSanityCheckIT extends AbstractAsyncEngineConnectorTest {
         List<SourceRecord> records = sourceRecords.allRecordsInOrder();
 
         List<String> ops = dataChangeAndStampOps(records);
-        LOGGER.info("Broker-less run produced {} record(s) with ops {}", records.size(), ops);
+        LOGGER.info("Single-task run produced {} record(s) with ops {}", records.size(), ops);
         int idx = 0;
         for (SourceRecord record : records) {
             String op = "<none>";

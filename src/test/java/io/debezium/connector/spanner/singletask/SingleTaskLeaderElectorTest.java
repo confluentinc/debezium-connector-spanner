@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache Software License version 2.0, available at http://www.apache.org/licenses/LICENSE-2.0
  */
-package io.debezium.connector.spanner.brokerless;
+package io.debezium.connector.spanner.singletask;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Test;
 
 import io.debezium.connector.spanner.kafka.internal.model.RebalanceEventMetadata;
 
-class SelfLeaderElectorTest {
+class SingleTaskLeaderElectorTest {
 
     @Test
     void alwaysElectsSelfAsLeaderAtGenerationZero() throws InterruptedException {
-        SelfLeaderElector elector = new SelfLeaderElector("consumer-1");
+        SingleTaskLeaderElector elector = new SingleTaskLeaderElector("consumer-1");
         AtomicReference<RebalanceEventMetadata> received = new AtomicReference<>();
 
         elector.listen(received::set);
@@ -31,7 +31,7 @@ class SelfLeaderElectorTest {
 
     @Test
     void shutdownDoesNotThrow() {
-        SelfLeaderElector elector = new SelfLeaderElector("consumer-1");
+        SingleTaskLeaderElector elector = new SingleTaskLeaderElector("consumer-1");
 
         elector.shutdown();
     }
