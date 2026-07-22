@@ -31,10 +31,10 @@ public class KafkaTaskCoordinator implements TaskCoordinator {
     private final TaskStateSubscriber stateSubscriber;
     private final LeaderElector leaderElector;
     private final MembershipProvider membershipProvider;
+    private final KafkaAdminClientFactory adminClientFactory;
 
     public KafkaTaskCoordinator(SpannerConnectorConfig config,
                                 SpannerConnectorTask task,
-                                KafkaAdminClientFactory adminClientFactory,
                                 TaskSyncContextHolder taskSyncContextHolder,
                                 Consumer<RuntimeException> errorHandler) {
 
@@ -51,6 +51,7 @@ public class KafkaTaskCoordinator implements TaskCoordinator {
         this.leaderElector = new RebalancingEventListener(task, config.getConnectorName(), config.rebalancingTopic(),
                 config.rebalancingTaskWaitingTimeout(), rebalancingConsumerFactory, errorHandler);
 
+        this.adminClientFactory = new KafkaAdminClientFactory(config);
         this.membershipProvider = new KafkaConsumerAdminService(adminClientFactory.getAdminClient(), config.getConnectorName());
     }
 
@@ -72,5 +73,10 @@ public class KafkaTaskCoordinator implements TaskCoordinator {
     @Override
     public MembershipProvider membershipProvider() {
         return membershipProvider;
+    }
+
+    @Override
+    public void close() {
+        adminClientFactory.close();
     }
 }

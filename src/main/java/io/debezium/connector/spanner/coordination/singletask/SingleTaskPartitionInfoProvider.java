@@ -24,4 +24,9 @@ public class SingleTaskPartitionInfoProvider implements PartitionInfoProvider {
                 .boxed()
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public void close() {
+        // no resources to release
+    }
 }

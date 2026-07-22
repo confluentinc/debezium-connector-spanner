@@ -54,4 +54,9 @@ public class SingleTaskCoordinator implements TaskCoordinator {
     public MembershipProvider membershipProvider() {
         return membershipProvider;
     }
+
+    @Override
+    public void close() {
+        // no resources to release
+    }
 }

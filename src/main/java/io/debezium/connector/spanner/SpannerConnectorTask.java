@@ -31,7 +31,6 @@ import io.debezium.connector.spanner.context.source.SourceInfoFactory;
 import io.debezium.connector.spanner.context.source.SpannerSourceTaskContext;
 import io.debezium.connector.spanner.coordination.PartitionInfoProvider;
 import io.debezium.connector.spanner.coordination.TaskCoordinatorFactory;
-import io.debezium.connector.spanner.coordination.kafka.KafkaAdminClientFactory;
 import io.debezium.connector.spanner.db.DaoFactory;
 import io.debezium.connector.spanner.db.DatabaseClientFactory;
 import io.debezium.connector.spanner.db.SpannerChangeStreamFactory;
@@ -80,7 +79,7 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
     private volatile LowWatermarkHolder lowWatermarkHolder;
 
-    private volatile KafkaAdminClientFactory adminClientFactory;
+    private volatile PartitionInfoProvider partitionInfoProvider;
 
     private volatile ChangeStream changeStream;
 
@@ -180,8 +179,7 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         final SourceInfoFactory sourceInfoFactory = new SourceInfoFactory(connectorConfig, lowWatermarkHolder);
 
-        this.adminClientFactory = connectorConfig.isSingleTaskCoordination() ? null : new KafkaAdminClientFactory(connectorConfig);
-        final PartitionInfoProvider partitionInfoProvider = TaskCoordinatorFactory.createPartitionInfoProvider(connectorConfig, adminClientFactory);
+        this.partitionInfoProvider = TaskCoordinatorFactory.createPartitionInfoProvider(connectorConfig);
 
         final PartitionOffsetProvider partitionOffsetProvider = new PartitionOffsetProvider(
                 this.context.offsetStorageReader(), spannerMeter.getMetricsEventPublisher(),
@@ -209,7 +207,6 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
                 partitionOffsetProvider,
                 changeStream,
                 dispatcher,
-                adminClientFactory,
                 schemaRegistry,
                 this::finish,
                 spannerMeter.getMetricsEventPublisher(),
@@ -308,11 +305,9 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         dispatcher.destroy();
 
-        LOGGER.info("Stopping task {}, adminClientFactory", taskUid);
+        LOGGER.info("Stopping task {}, partitionInfoProvider", taskUid);
 
-        if (adminClientFactory != null) {
-            adminClientFactory.close();
-        }
+        partitionInfoProvider.close();
 
         LOGGER.info("Stopping task {}, spannerMeter", taskUid);
 

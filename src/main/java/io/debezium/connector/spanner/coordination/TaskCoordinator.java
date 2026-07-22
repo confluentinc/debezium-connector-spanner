@@ -31,4 +31,9 @@ public interface TaskCoordinator {
      * Component used to determine the currently active set of tasks.
      */
     MembershipProvider membershipProvider();
+
+    /**
+     * Releases any resources this coordinator holds.
+     */
+    void close();
 }

@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
-import io.debezium.connector.spanner.coordination.kafka.KafkaAdminClientFactory;
 import io.debezium.connector.spanner.coordination.kafka.KafkaPartitionInfoProvider;
 import io.debezium.connector.spanner.coordination.kafka.KafkaTaskCoordinator;
 import io.debezium.connector.spanner.coordination.kafka.internal.KafkaInternalTopicAdminService;
@@ -33,7 +32,6 @@ public class TaskCoordinatorFactory {
 
     public static TaskCoordinator create(SpannerConnectorConfig config,
                                          SpannerConnectorTask task,
-                                         KafkaAdminClientFactory adminClientFactory,
                                          TaskSyncContextHolder taskSyncContextHolder,
                                          Consumer<RuntimeException> errorHandler) {
         if (config.isSingleTaskCoordination()) {
@@ -41,7 +39,7 @@ public class TaskCoordinatorFactory {
             return new SingleTaskCoordinator(task.getTaskUid());
         }
         LOGGER.info("Task {} - using Kafka partition coordination", task.getTaskUid());
-        return new KafkaTaskCoordinator(config, task, adminClientFactory, taskSyncContextHolder, errorHandler);
+        return new KafkaTaskCoordinator(config, task, taskSyncContextHolder, errorHandler);
     }
 
     public static CoordinationProvisioner createProvisioner(SpannerConnectorConfig config) {
@@ -51,11 +49,10 @@ public class TaskCoordinatorFactory {
         return new KafkaInternalTopicAdminService(config);
     }
 
-    public static PartitionInfoProvider createPartitionInfoProvider(SpannerConnectorConfig config,
-                                                                    KafkaAdminClientFactory adminClientFactory) {
+    public static PartitionInfoProvider createPartitionInfoProvider(SpannerConnectorConfig config) {
         if (config.isSingleTaskCoordination()) {
             return new SingleTaskPartitionInfoProvider();
         }
-        return new KafkaPartitionInfoProvider(adminClientFactory.getAdminClient());
+        return new KafkaPartitionInfoProvider(config);
     }
 }
