@@ -25,6 +25,7 @@ import org.apache.kafka.common.TopicPartitionInfo;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.slf4j.Logger;
 
+import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.coordination.PartitionInfoProvider;
 
 /**
@@ -33,14 +34,15 @@ import io.debezium.connector.spanner.coordination.PartitionInfoProvider;
  */
 public class KafkaPartitionInfoProvider implements PartitionInfoProvider {
     private static final Logger LOGGER = getLogger(KafkaPartitionInfoProvider.class);
-    private final AdminClient adminClient;
+    private final KafkaAdminClientFactory adminClientFactory;
 
-    public KafkaPartitionInfoProvider(AdminClient adminClient) {
-        this.adminClient = adminClient;
+    public KafkaPartitionInfoProvider(SpannerConnectorConfig connectorConfig) {
+        this.adminClientFactory = new KafkaAdminClientFactory(connectorConfig);
     }
 
     @Override
     public Collection<Integer> getPartitions(String topicName, Optional<Integer> numPartitions) throws ExecutionException, InterruptedException {
+        AdminClient adminClient = adminClientFactory.getAdminClient();
 
         try {
             if (!topicExists(adminClient, topicName)) {
@@ -63,4 +65,8 @@ public class KafkaPartitionInfoProvider implements PartitionInfoProvider {
         }
     }
 
+    @Override
+    public void close() {
+        adminClientFactory.close();
+    }
 }

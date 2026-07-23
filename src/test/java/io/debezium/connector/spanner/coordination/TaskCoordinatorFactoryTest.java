@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerConnectorTask;
-import io.debezium.connector.spanner.coordination.kafka.KafkaAdminClientFactory;
 import io.debezium.connector.spanner.coordination.kafka.KafkaPartitionInfoProvider;
 import io.debezium.connector.spanner.coordination.singletask.NoOpCoordinationProvisioner;
 import io.debezium.connector.spanner.coordination.singletask.SingleTaskCoordinator;
@@ -28,7 +27,7 @@ class TaskCoordinatorFactoryTest {
         SpannerConnectorTask task = mock(SpannerConnectorTask.class);
         when(task.getTaskUid()).thenReturn("task-1");
 
-        TaskCoordinator coordinator = TaskCoordinatorFactory.create(config, task, null, null, ex -> {
+        TaskCoordinator coordinator = TaskCoordinatorFactory.create(config, task, null, ex -> {
         });
 
         assertInstanceOf(SingleTaskCoordinator.class, coordinator);
@@ -49,7 +48,7 @@ class TaskCoordinatorFactoryTest {
         SpannerConnectorConfig config = mock(SpannerConnectorConfig.class);
         when(config.isSingleTaskCoordination()).thenReturn(true);
 
-        PartitionInfoProvider provider = TaskCoordinatorFactory.createPartitionInfoProvider(config, null);
+        PartitionInfoProvider provider = TaskCoordinatorFactory.createPartitionInfoProvider(config);
 
         assertInstanceOf(SingleTaskPartitionInfoProvider.class, provider);
     }
@@ -58,9 +57,8 @@ class TaskCoordinatorFactoryTest {
     void createPartitionInfoProviderReturnsKafkaImplWhenSingleTaskCoordinationDisabled() {
         SpannerConnectorConfig config = mock(SpannerConnectorConfig.class);
         when(config.isSingleTaskCoordination()).thenReturn(false);
-        KafkaAdminClientFactory adminClientFactory = mock(KafkaAdminClientFactory.class);
 
-        PartitionInfoProvider provider = TaskCoordinatorFactory.createPartitionInfoProvider(config, adminClientFactory);
+        PartitionInfoProvider provider = TaskCoordinatorFactory.createPartitionInfoProvider(config);
 
         assertInstanceOf(KafkaPartitionInfoProvider.class, provider);
     }

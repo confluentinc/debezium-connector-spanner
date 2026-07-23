@@ -20,4 +20,9 @@ public interface PartitionInfoProvider {
      * exist.
      */
     Collection<Integer> getPartitions(String topicName, Optional<Integer> numPartitions) throws ExecutionException, InterruptedException;
+
+    /**
+     * Releases any resources this provider holds.
+     */
+    void close();
 }
