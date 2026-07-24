@@ -18,9 +18,9 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
-import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.RebalanceState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 
 /**
  * Utility to merge incoming task states

@@ -5,7 +5,7 @@
  */
 package io.debezium.connector.spanner.task.state;
 
-import io.debezium.connector.spanner.kafka.internal.model.PartitionStateEnum;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionStateEnum;
 
 /**
  * Notifies that status of the partition has been changed

@@ -21,9 +21,9 @@ import com.google.cloud.Timestamp;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerErrorHandler;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionStateEnum;
 import io.debezium.connector.spanner.db.model.InitialPartition;
-import io.debezium.connector.spanner.kafka.internal.model.PartitionState;
-import io.debezium.connector.spanner.kafka.internal.model.PartitionStateEnum;
 
 /** Calculates watermark based on offsets of all partitions */
 public class LowWatermarkCalculator {

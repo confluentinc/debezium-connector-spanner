@@ -8,8 +8,8 @@ package io.debezium.connector.spanner.task;
 import java.util.List;
 
 import io.debezium.connector.spanner.PartitionManager;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionStateEnum;
 import io.debezium.connector.spanner.db.model.Partition;
-import io.debezium.connector.spanner.kafka.internal.model.PartitionStateEnum;
 import io.debezium.connector.spanner.task.state.NewPartitionsEvent;
 import io.debezium.connector.spanner.task.state.PartitionStatusUpdateEvent;
 import io.debezium.connector.spanner.task.state.TaskStateChangeEvent;

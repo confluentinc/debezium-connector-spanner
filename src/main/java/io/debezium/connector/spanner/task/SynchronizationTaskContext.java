@@ -21,7 +21,6 @@ import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
 import io.debezium.connector.spanner.db.metadata.SchemaRegistry;
 import io.debezium.connector.spanner.db.stream.ChangeStream;
-import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
 import io.debezium.connector.spanner.metrics.MetricsEventPublisher;
 import io.debezium.connector.spanner.processor.SpannerEventDispatcher;
 import io.debezium.connector.spanner.task.leader.LeaderAction;
@@ -47,6 +46,8 @@ public class SynchronizationTaskContext {
     private final LeaderRebalanceStrategy leaderRebalanceStrategy = LeaderRebalanceStrategy.EQUAL_SHARING;
 
     private final LeaderAction leaderAction;
+
+    private final TaskCoordinator coordination;
 
     private final LeaderElector leaderElector;
     private final TaskStateSubscriber taskStateSubscriber;
@@ -84,7 +85,6 @@ public class SynchronizationTaskContext {
                                       PartitionOffsetProvider partitionOffsetProvider,
                                       ChangeStream changeStream,
                                       SpannerEventDispatcher spannerEventDispatcher,
-                                      KafkaAdminClientFactory adminClientFactory,
                                       SchemaRegistry schemaRegistry,
                                       Runnable finishingHandler,
                                       MetricsEventPublisher metricsEventPublisher,
@@ -101,8 +101,8 @@ public class SynchronizationTaskContext {
 
         this.taskSyncContextHolder = new TaskSyncContextHolder(metricsEventPublisher);
 
-        TaskCoordinator coordination = TaskCoordinatorFactory.create(
-                connectorConfig, task, adminClientFactory, taskSyncContextHolder, this::onError);
+        this.coordination = TaskCoordinatorFactory.create(
+                connectorConfig, task, taskSyncContextHolder, this::onError);
         this.taskStatePublisher = coordination.statePublisher();
         this.taskStateSubscriber = coordination.stateSubscriber();
         this.leaderElector = coordination.leaderElector();
@@ -227,6 +227,9 @@ public class SynchronizationTaskContext {
 
             this.rebalanceHandler.destroy();
             LOGGER.info("Task {}, Shut down rebalance handler", this.taskSyncContextHolder.get().getTaskUid());
+
+            this.coordination.close();
+            LOGGER.info("Task {}, Shut down coordination", this.taskSyncContextHolder.get().getTaskUid());
 
         }
         catch (Exception ex) {

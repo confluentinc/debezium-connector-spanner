@@ -8,9 +8,13 @@ package io.debezium.connector.spanner.coordination;
 import java.util.Set;
 
 /**
- * SPI for providing the set of currently active task members
+ * SPI for determining which tasks are currently part of the active coordination group.
  */
 public interface MembershipProvider {
 
+    /**
+     * Returns the identifiers of all tasks currently considered active, used by the leader to
+     * distinguish live tasks from ones that have left.
+     */
     Set<String> getActiveMembers();
 }

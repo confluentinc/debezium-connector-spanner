@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import io.debezium.connector.spanner.kafka.internal.model.PartitionState;
-import io.debezium.connector.spanner.kafka.internal.model.PartitionStateEnum;
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionStateEnum;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
 
 class TaskPartitionEqualSharingRebalancerTest {
 

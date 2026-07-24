@@ -10,10 +10,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 import org.slf4j.Logger;
 
 import io.debezium.connector.spanner.coordination.TaskStatePublisher;
-import io.debezium.connector.spanner.kafka.internal.model.MessageTypeEnum;
-import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
-import io.debezium.connector.spanner.kafka.internal.model.SyncEventMetadata;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.MessageTypeEnum;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.RebalanceState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.SyncEventMetadata;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 import io.debezium.connector.spanner.task.state.SyncEvent;
 import io.debezium.connector.spanner.task.state.TaskStateChangeEvent;
 import io.debezium.function.BlockingConsumer;

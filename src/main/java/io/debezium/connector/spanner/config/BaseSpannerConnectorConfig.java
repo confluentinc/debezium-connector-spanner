@@ -59,7 +59,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
 
     public enum CoordinationMode implements EnumeratedValue {
         KAFKA("kafka"),
-        BROKERLESS("brokerless");
+        SINGLETASK("singletask");
 
         private final String value;
 
@@ -692,7 +692,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
     public static final Field COORDINATION_MODE = Field.create(COORDINATION_MODE_PROPERTY_NAME)
             .withDisplayName("Coordination mode")
             .withEnum(CoordinationMode.class, CoordinationMode.KAFKA)
-            .withDescription("Mode of task coordination. Valid values are KAFKA or BROKERLESS. Default is KAFKA.");
+            .withDescription("Mode of task coordination. Valid values are KAFKA or SINGLETASK. Default is KAFKA.");
 
     protected static final ConfigDefinition CONFIG_DEFINITION = ConfigDefinition.editor()
             .name("Spanner")
