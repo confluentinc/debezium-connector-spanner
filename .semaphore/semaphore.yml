@@ -19,14 +19,14 @@ global_job_config:
   prologue:
     commands:
       - checkout
-      - sem-version java 17
+      - sem-version java 21
       - . cache-maven restore
 
 blocks:
   - name: 'Build, Test, Release'
     dependencies: []
     run:
-      when: "branch = 'release-3.6.0.Final-confluent' and (change_in('/', {default_branch: 'main'}) or change_in('.semaphore/', {default_branch: 'main'}))"
+      when: "branch = 'release-3.6.0.Final-confluent' and (change_in('/', {default_branch: 'upstream-main'}) or change_in('.semaphore/', {default_branch: 'upstream-main'}))"
     task:
       jobs:
         - name: 'Build, test, and publish to CodeArtifact'
