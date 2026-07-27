@@ -31,7 +31,7 @@ blocks:
       jobs:
         - name: 'Build, test, and publish to CodeArtifact'
           commands:
-            - mvn -U -Dmaven.wagon.http.retryHandler.count=10 --batch-mode clean install -DskipITs
+            - ./mvnw -U -Dmaven.wagon.http.retryHandler.count=10 --batch-mode clean install -DskipITs
             - export CONNECTOR_VERSION=$(ls target/debezium-connector-spanner-*.jar | grep -v '\(sources\|javadoc\|tests\)' | head -1 | sed 's|.*/debezium-connector-spanner-\(.*\)\.jar|\1|')
             - echo "Deploying version - ${CONNECTOR_VERSION}"
             - |
@@ -40,7 +40,7 @@ blocks:
                 ls -la target/
                 exit 1
               fi
-            - mvn deploy:deploy-file
+            - ./mvnw deploy:deploy-file
               -Durl=https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/
               -DrepositoryId=confluent-codeartifact-internal
               -Dfile=target/debezium-connector-spanner-${CONNECTOR_VERSION}.jar
@@ -49,7 +49,7 @@ blocks:
               -DartifactId=debezium-connector-spanner
               -Dversion=${CONNECTOR_VERSION}
               -Dpackaging=jar
-            - mvn deploy:deploy-file
+            - ./mvnw deploy:deploy-file
               -Durl=https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/
               -DrepositoryId=confluent-codeartifact-internal
               -Dfile=target/debezium-connector-spanner-${CONNECTOR_VERSION}-sources.jar
@@ -59,7 +59,7 @@ blocks:
               -Dversion=${CONNECTOR_VERSION}
               -Dpackaging=jar
               -Dclassifier=sources
-            - mvn deploy:deploy-file
+            - ./mvnw deploy:deploy-file
               -Durl=https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/
               -DrepositoryId=confluent-codeartifact-internal
               -Dfile=target/debezium-connector-spanner-${CONNECTOR_VERSION}-tests.jar
