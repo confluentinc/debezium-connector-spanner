@@ -26,7 +26,7 @@ blocks:
   - name: 'Build, Test, Release'
     dependencies: []
     run:
-      when: "branch = 'release-3.6.0.Final-confluent' and (change_in('/') or change_in('.semaphore/'))"
+      when: "branch = 'release-3.6.0.Final-confluent' and (change_in('/', {default_branch: 'main'}) or change_in('.semaphore/', {default_branch: 'main'}))"
     task:
       jobs:
         - name: 'Build, test, and publish to CodeArtifact'
