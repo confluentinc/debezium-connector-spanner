@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 
 /**
  * Checks if the current tasks count is okay for

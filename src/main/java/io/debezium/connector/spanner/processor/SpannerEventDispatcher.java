@@ -23,10 +23,10 @@ import io.debezium.connector.common.DebeziumHeaderProducer;
 import io.debezium.connector.spanner.SpannerConnectorConfig;
 import io.debezium.connector.spanner.SpannerPartition;
 import io.debezium.connector.spanner.context.source.SourceInfoFactory;
+import io.debezium.connector.spanner.coordination.PartitionInfoProvider;
 import io.debezium.connector.spanner.db.metadata.SchemaRegistry;
 import io.debezium.connector.spanner.db.metadata.TableId;
 import io.debezium.connector.spanner.exception.SpannerConnectorException;
-import io.debezium.connector.spanner.kafka.KafkaPartitionInfoProvider;
 import io.debezium.data.Envelope;
 import io.debezium.heartbeat.DebeziumHeartbeatFactory;
 import io.debezium.pipeline.DataChangeEvent;
@@ -55,7 +55,7 @@ public class SpannerEventDispatcher extends EventDispatcher<SpannerPartition, Ta
 
     private final SourceInfoFactory sourceInfoFactory;
 
-    private final KafkaPartitionInfoProvider kafkaPartitionInfoProvider;
+    private final PartitionInfoProvider partitionInfoProvider;
 
     public SpannerEventDispatcher(SpannerConnectorConfig connectorConfig,
                                   TopicNamingStrategy<TableId> topicNamingStrategy,
@@ -68,7 +68,7 @@ public class SpannerEventDispatcher extends EventDispatcher<SpannerPartition, Ta
                                   SchemaNameAdjuster schemaNameAdjuster,
                                   SchemaRegistry schemaRegistry,
                                   SourceInfoFactory sourceInfoFactory,
-                                  KafkaPartitionInfoProvider kafkaPartitionInfoProvider,
+                                  PartitionInfoProvider partitionInfoProvider,
                                   DebeziumHeaderProducer debeziumHeaderProducer) {
         super(connectorConfig, topicNamingStrategy, schema, queue, filter, changeEventCreator, metadataProvider,
                 heartbeatFactory.getScheduledHeartbeat(
@@ -83,7 +83,7 @@ public class SpannerEventDispatcher extends EventDispatcher<SpannerPartition, Ta
         this.schemaRegistry = schemaRegistry;
         this.schema = schema;
         this.sourceInfoFactory = sourceInfoFactory;
-        this.kafkaPartitionInfoProvider = kafkaPartitionInfoProvider;
+        this.partitionInfoProvider = partitionInfoProvider;
     }
 
     public boolean publishLowWatermarkStampEvent() {
@@ -98,7 +98,7 @@ public class SpannerEventDispatcher extends EventDispatcher<SpannerPartition, Ta
                 Struct sourceStruct = sourceInfoFactory.getSourceInfoForLowWatermarkStamp(tableId).struct();
 
                 int numPartitions = connectorConfig.getTopicNumPartitions();
-                for (int partition : kafkaPartitionInfoProvider.getPartitions(topicName, Optional.of(numPartitions))) {
+                for (int partition : partitionInfoProvider.getPartitions(topicName, Optional.of(numPartitions))) {
                     SourceRecord sourceRecord = emitSourceRecord(topicName, dataCollectionSchema, partition, sourceStruct);
                     LOGGER.debug("Build low watermark stamp record {} ", sourceRecord);
 

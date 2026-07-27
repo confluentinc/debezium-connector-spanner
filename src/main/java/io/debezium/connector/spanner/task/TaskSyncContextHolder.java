@@ -14,8 +14,8 @@ import java.util.function.UnaryOperator;
 
 import org.slf4j.Logger;
 
+import io.debezium.connector.spanner.coordination.kafka.internal.model.RebalanceState;
 import io.debezium.connector.spanner.exception.SpannerConnectorException;
-import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
 import io.debezium.connector.spanner.metrics.MetricsEventPublisher;
 import io.debezium.connector.spanner.metrics.event.TaskSyncContextMetricEvent;
 import io.debezium.connector.spanner.task.utils.TimeoutMeter;

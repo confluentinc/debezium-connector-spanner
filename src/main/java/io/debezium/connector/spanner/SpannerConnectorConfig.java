@@ -344,4 +344,12 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
     public String clientCertPath() {
         return getConfig().getString(SPANNER_OMNI_CLIENT_CERT_PATH);
     }
+
+    public CoordinationMode coordinationMode() {
+        return CoordinationMode.parse(getConfig().getString(COORDINATION_MODE));
+    }
+
+    public boolean isSingleTaskCoordination() {
+        return CoordinationMode.SINGLETASK == coordinationMode();
+    }
 }

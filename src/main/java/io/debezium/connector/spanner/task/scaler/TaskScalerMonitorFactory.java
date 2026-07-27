@@ -11,8 +11,8 @@ import java.util.function.Consumer;
 import org.apache.kafka.connect.connector.ConnectorContext;
 
 import io.debezium.connector.spanner.SpannerConnectorConfig;
-import io.debezium.connector.spanner.kafka.internal.SyncEventConsumerFactory;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncEventListener;
+import io.debezium.connector.spanner.coordination.kafka.internal.SyncEventConsumerFactory;
+import io.debezium.connector.spanner.coordination.kafka.internal.TaskSyncEventListener;
 
 /**
  * Creates {@link TaskScalerMonitor} based on configuration

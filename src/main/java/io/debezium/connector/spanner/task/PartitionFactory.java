@@ -17,9 +17,9 @@ import org.slf4j.Logger;
 
 import com.google.cloud.Timestamp;
 
+import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionState;
 import io.debezium.connector.spanner.db.model.InitialPartition;
 import io.debezium.connector.spanner.db.model.Partition;
-import io.debezium.connector.spanner.kafka.internal.model.PartitionState;
 import io.debezium.connector.spanner.metrics.MetricsEventPublisher;
 import io.debezium.connector.spanner.metrics.event.PartitionOffsetLagMetricEvent;
 

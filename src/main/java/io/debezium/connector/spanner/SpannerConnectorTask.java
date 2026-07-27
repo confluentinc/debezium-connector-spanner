@@ -29,14 +29,14 @@ import io.debezium.connector.spanner.config.SpannerTableFilter;
 import io.debezium.connector.spanner.context.offset.SpannerOffsetContext;
 import io.debezium.connector.spanner.context.source.SourceInfoFactory;
 import io.debezium.connector.spanner.context.source.SpannerSourceTaskContext;
+import io.debezium.connector.spanner.coordination.PartitionInfoProvider;
+import io.debezium.connector.spanner.coordination.TaskCoordinatorFactory;
 import io.debezium.connector.spanner.db.DaoFactory;
 import io.debezium.connector.spanner.db.DatabaseClientFactory;
 import io.debezium.connector.spanner.db.SpannerChangeStreamFactory;
 import io.debezium.connector.spanner.db.metadata.SchemaRegistry;
 import io.debezium.connector.spanner.db.metadata.TableId;
 import io.debezium.connector.spanner.db.stream.ChangeStream;
-import io.debezium.connector.spanner.kafka.KafkaAdminClientFactory;
-import io.debezium.connector.spanner.kafka.KafkaPartitionInfoProvider;
 import io.debezium.connector.spanner.metrics.SpannerChangeEventSourceMetricsFactory;
 import io.debezium.connector.spanner.metrics.SpannerMeter;
 import io.debezium.connector.spanner.processor.SourceRecordUtils;
@@ -79,7 +79,7 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
     private volatile LowWatermarkHolder lowWatermarkHolder;
 
-    private volatile KafkaAdminClientFactory adminClientFactory;
+    private volatile PartitionInfoProvider partitionInfoProvider;
 
     private volatile ChangeStream changeStream;
 
@@ -179,9 +179,7 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         final SourceInfoFactory sourceInfoFactory = new SourceInfoFactory(connectorConfig, lowWatermarkHolder);
 
-        this.adminClientFactory = new KafkaAdminClientFactory(connectorConfig);
-
-        final KafkaPartitionInfoProvider kafkaPartitionInfoProvider = new KafkaPartitionInfoProvider(adminClientFactory.getAdminClient());
+        this.partitionInfoProvider = TaskCoordinatorFactory.createPartitionInfoProvider(connectorConfig);
 
         final PartitionOffsetProvider partitionOffsetProvider = new PartitionOffsetProvider(
                 this.context.offsetStorageReader(), spannerMeter.getMetricsEventPublisher(),
@@ -199,7 +197,7 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
                 schemaNameAdjuster,
                 schemaRegistry,
                 sourceInfoFactory,
-                kafkaPartitionInfoProvider,
+                partitionInfoProvider,
                 connectorConfig.getServiceRegistry().tryGetService(DebeziumHeaderProducer.class));
 
         this.synchronizationTaskContext = new SynchronizationTaskContext(
@@ -209,7 +207,6 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
                 partitionOffsetProvider,
                 changeStream,
                 dispatcher,
-                adminClientFactory,
                 schemaRegistry,
                 this::finish,
                 spannerMeter.getMetricsEventPublisher(),
@@ -308,9 +305,9 @@ public class SpannerConnectorTask extends SpannerBaseSourceTask {
 
         dispatcher.destroy();
 
-        LOGGER.info("Stopping task {}, adminClientFactory", taskUid);
+        LOGGER.info("Stopping task {}, partitionInfoProvider", taskUid);
 
-        adminClientFactory.close();
+        partitionInfoProvider.close();
 
         LOGGER.info("Stopping task {}, spannerMeter", taskUid);
 

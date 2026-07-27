@@ -7,7 +7,7 @@ package io.debezium.connector.spanner.task.leader.rebalancer;
 
 import java.util.Map;
 
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
 
 /**
  * Rebalancing partitions across tasks

@@ -19,11 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.debezium.DebeziumException;
-import io.debezium.connector.spanner.kafka.internal.KafkaConsumerAdminService;
-import io.debezium.connector.spanner.kafka.internal.TaskSyncPublisher;
-import io.debezium.connector.spanner.kafka.internal.model.RebalanceState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskState;
-import io.debezium.connector.spanner.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.MembershipProvider;
+import io.debezium.connector.spanner.coordination.TaskStatePublisher;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.RebalanceState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
 import io.debezium.connector.spanner.task.TaskSyncContext;
 import io.debezium.connector.spanner.task.TaskSyncContextHolder;
 import io.debezium.connector.spanner.task.leader.rebalancer.TaskPartitionRebalancer;
@@ -49,12 +49,12 @@ public class LeaderAction {
     private static final Duration EPOCH_OFFSET_UPDATE_DURATION = Duration.ofSeconds(300);
 
     private final TaskSyncContextHolder taskSyncContextHolder;
-    private final KafkaConsumerAdminService kafkaAdminService;
+    private final MembershipProvider membershipProvider;
 
     private final LeaderService leaderService;
     private final TaskPartitionRebalancer taskPartitonRebalancer;
 
-    private final TaskSyncPublisher taskSyncPublisher;
+    private final TaskStatePublisher taskStatePublisher;
 
     private volatile Thread leaderThread;
 
@@ -64,15 +64,15 @@ public class LeaderAction {
 
     private final Clock clock;
 
-    public LeaderAction(TaskSyncContextHolder taskSyncContextHolder, KafkaConsumerAdminService kafkaAdminService,
+    public LeaderAction(TaskSyncContextHolder taskSyncContextHolder, MembershipProvider membershipProvider,
                         LeaderService leaderService, TaskPartitionRebalancer taskPartitonRebalancer,
-                        TaskSyncPublisher taskSyncPublisher,
+                        TaskStatePublisher taskStatePublisher,
                         Consumer<Throwable> errorHandler) {
         this.taskSyncContextHolder = taskSyncContextHolder;
-        this.kafkaAdminService = kafkaAdminService;
+        this.membershipProvider = membershipProvider;
         this.leaderService = leaderService;
         this.taskPartitonRebalancer = taskPartitonRebalancer;
-        this.taskSyncPublisher = taskSyncPublisher;
+        this.taskStatePublisher = taskStatePublisher;
         this.errorHandler = errorHandler;
         this.clock = Clock.system();
     }
@@ -125,7 +125,7 @@ public class LeaderAction {
                 .build());
 
         TaskSyncEvent taskSyncEvent = taskSyncContext.buildUpdateEpochTaskSyncEvent();
-        taskSyncPublisher.send(taskSyncEvent);
+        taskStatePublisher.send(taskSyncEvent);
 
         int numPartitions = taskSyncEvent.getNumPartitions();
 
@@ -183,7 +183,7 @@ public class LeaderAction {
         LOGGER.info("performLeaderActions: new epoch initialization");
         boolean startFromScratch = leaderService.isStartFromScratch();
 
-        Set<String> activeConsumers = kafkaAdminService.getActiveConsumerGroupMembers();
+        Set<String> activeConsumers = membershipProvider.getActiveMembers();
 
         LOGGER.info("Task {} with consumer {}, performLeaderActions: consumers found {}", taskSyncContextHolder.get().getTaskUid(),
                 taskSyncContextHolder.get().getConsumerId(), activeConsumers);
@@ -264,7 +264,7 @@ public class LeaderAction {
                 numPartitions + numSharedPartitions,
                 numPartitions, numSharedPartitions, taskUids, numPartitions + numSharedPartitions);
 
-        taskSyncPublisher.send(taskSyncEvent);
+        taskStatePublisher.send(taskSyncEvent);
 
         if (startFromScratch) {
             leaderService.newParentPartition();
