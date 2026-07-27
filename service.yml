@@ -1,0 +1,12 @@
+name: debezium-connector-spanner
+lang: java
+
+code_artifact:
+  enable: true
+  package_paths:
+    - "maven-snapshots/maven/io.confluent/debezium-connector-spanner"
+
+semaphore:
+  enable: true
+  branches:
+    - release-3.6.0.Final-confluent
