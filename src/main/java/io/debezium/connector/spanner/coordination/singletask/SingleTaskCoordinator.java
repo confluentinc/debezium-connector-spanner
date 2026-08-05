@@ -5,34 +5,28 @@
  */
 package io.debezium.connector.spanner.coordination.singletask;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.debezium.connector.spanner.coordination.LeaderElector;
 import io.debezium.connector.spanner.coordination.MembershipProvider;
 import io.debezium.connector.spanner.coordination.TaskCoordinator;
 import io.debezium.connector.spanner.coordination.TaskStatePublisher;
 import io.debezium.connector.spanner.coordination.TaskStateSubscriber;
-import io.debezium.connector.spanner.coordination.kafka.KafkaTaskCoordinator;
 
 /**
  * Single-task implementation of the partition-coordination SPI, the sole task is always leader,
  * membership is always just itself, and there are no peers to publish state to or subscribe from.
- * Bundles the no-op/self-contained single-task components instead of the Kafka-topic-backed
- * equivalents {@link KafkaTaskCoordinator} bundles.
+ * Bundles the self-contained single-task components.
  */
 public class SingleTaskCoordinator implements TaskCoordinator {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SingleTaskCoordinator.class);
-
-    private final TaskStatePublisher statePublisher = new NoOpTaskStatePublisher();
+    private final TaskStatePublisher statePublisher;
     private final TaskStateSubscriber stateSubscriber = new SingleTaskStateSubscriber();
     private final LeaderElector leaderElector;
     private final MembershipProvider membershipProvider;
 
-    public SingleTaskCoordinator(String taskUid) {
+    public SingleTaskCoordinator(String taskUid, String stateFile) {
         final String consumerId = "single-task-" + taskUid;
         this.leaderElector = new SingleTaskLeaderElector(consumerId);
         this.membershipProvider = new SingleTaskMembershipProvider(consumerId);
+        this.statePublisher = new SingleTaskStatePublisher(stateFile);
     }
 
     @Override

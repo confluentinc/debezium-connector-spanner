@@ -174,6 +174,8 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
 
     public static final String COORDINATION_MODE_PROPERTY_NAME = "connector.spanner.coordination.mode";
 
+    protected static final String SINGLETASK_STATE_FILE_PROPERTY_NAME = "connector.spanner.singletask.state.file";
+
     protected static final Field LOW_WATERMARK_ENABLED_FIELD = Field.create(LOW_WATERMARK_ENABLED)
             .withDisplayName(LOW_WATERMARK_ENABLED)
             .withType(Type.BOOLEAN)
@@ -694,6 +696,13 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withEnum(CoordinationMode.class, CoordinationMode.KAFKA)
             .withDescription("Mode of task coordination. Valid values are KAFKA or SINGLETASK. Default is KAFKA.");
 
+    public static final Field SINGLETASK_STATE_FILE = Field.create(SINGLETASK_STATE_FILE_PROPERTY_NAME)
+            .withDisplayName("SingleTaskStateFilePath")
+            .withType(Type.STRING)
+            .withImportance(Importance.LOW)
+            .withDescription("Path to the SingleTask state file where coordination mode persists its "
+                    + "task/partition sync state across restarts.");
+
     protected static final ConfigDefinition CONFIG_DEFINITION = ConfigDefinition.editor()
             .name("Spanner")
             .type(PROJECT_ID)
@@ -756,7 +765,8 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
                     TASKS_FAIL_OVERLOADED_CHECK_INTERVAL,
                     SCALER_MONITOR_ENABLED,
                     LOGGING_JSON_ENABLED,
-                    COORDINATION_MODE)
+                    COORDINATION_MODE,
+                    SINGLETASK_STATE_FILE)
             .events(TABLE_EXCLUDE_LIST,
                     TABLE_INCLUDE_LIST,
                     CUSTOM_CONVERTERS,

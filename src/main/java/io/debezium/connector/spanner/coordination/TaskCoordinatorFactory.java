@@ -36,7 +36,7 @@ public class TaskCoordinatorFactory {
                                          Consumer<RuntimeException> errorHandler) {
         if (config.isSingleTaskCoordination()) {
             LOGGER.info("Task {} - single-task partition coordination", task.getTaskUid());
-            return new SingleTaskCoordinator(task.getTaskUid());
+            return new SingleTaskCoordinator(task.getTaskUid(), config.singleTaskStateFile());
         }
         LOGGER.info("Task {} - using Kafka partition coordination", task.getTaskUid());
         return new KafkaTaskCoordinator(config, task, taskSyncContextHolder, errorHandler);
