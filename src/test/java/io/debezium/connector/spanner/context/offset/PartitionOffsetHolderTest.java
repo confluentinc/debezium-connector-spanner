@@ -42,6 +42,15 @@ class PartitionOffsetHolderTest {
     }
 
     @Test
+    void testGetOffsetIsNullForRemovedPartitionTombstone() {
+        // Finished-partition removal uses the no-arg constructor (null offset). getOffset()
+        // must return null (not an empty map) so Kafka Connect writes a tombstone and removes
+        // the partition token from the offset store, instead of leaving it behind as "{}" and
+        // growing the offset store without bound.
+        assertNull(new PartitionOffset().getOffset());
+    }
+
+    @Test
     void testUpdatePartitionOffset() {
         PartitionOffset partitionOffsetHolder = new PartitionOffset(Timestamp.ofTimeMicroseconds(1L),
                 StreamEventMetadata.newBuilder().withPartitionStartTimestamp(Timestamp.now()).build());
