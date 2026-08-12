@@ -32,10 +32,11 @@ blocks:
         - name: 'Build, test, and publish to CodeArtifact'
           commands:
             - ./mvnw -U -Dmaven.wagon.http.retryHandler.count=10 --batch-mode clean install -DskipITs
-            - export CONNECTOR_VERSION=$(ls target/debezium-connector-spanner-*.jar | grep -v '\(sources\|javadoc\|tests\)' | head -1 | sed 's|.*/debezium-connector-spanner-\(.*\)\.jar|\1|')
-            - echo "Deploying version - ${CONNECTOR_VERSION}"
+            - export BUILT_VERSION=$(ls target/debezium-connector-spanner-*.jar | grep -v '\(sources\|javadoc\|tests\)' | head -1 | sed 's|.*/debezium-connector-spanner-\(.*\)\.jar|\1|')
+            - export CONNECTOR_VERSION=3.6.0.Final-1
+            - echo "Built as ${BUILT_VERSION}, deploying as version - ${CONNECTOR_VERSION}"
             - |
-              if [ -z "$CONNECTOR_VERSION" ]; then
+              if [ -z "$BUILT_VERSION" ]; then
                 echo "ERROR: Could not determine version from built artifacts"
                 ls -la target/
                 exit 1
@@ -43,7 +44,7 @@ blocks:
             - ./mvnw deploy:deploy-file
               -Durl=https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/
               -DrepositoryId=confluent-codeartifact-internal
-              -Dfile=target/debezium-connector-spanner-${CONNECTOR_VERSION}.jar
+              -Dfile=target/debezium-connector-spanner-${BUILT_VERSION}.jar
               -DpomFile=pom.xml
               -DgroupId=io.confluent
               -DartifactId=debezium-connector-spanner
@@ -52,7 +53,7 @@ blocks:
             - ./mvnw deploy:deploy-file
               -Durl=https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/
               -DrepositoryId=confluent-codeartifact-internal
-              -Dfile=target/debezium-connector-spanner-${CONNECTOR_VERSION}-sources.jar
+              -Dfile=target/debezium-connector-spanner-${BUILT_VERSION}-sources.jar
               -DgeneratePom=false
               -DgroupId=io.confluent
               -DartifactId=debezium-connector-spanner
@@ -62,7 +63,7 @@ blocks:
             - ./mvnw deploy:deploy-file
               -Durl=https://confluent-519856050701.d.codeartifact.us-west-2.amazonaws.com/maven/maven-snapshots/
               -DrepositoryId=confluent-codeartifact-internal
-              -Dfile=target/debezium-connector-spanner-${CONNECTOR_VERSION}-tests.jar
+              -Dfile=target/debezium-connector-spanner-${BUILT_VERSION}-tests.jar
               -DgeneratePom=false
               -DgroupId=io.confluent
               -DartifactId=debezium-connector-spanner
