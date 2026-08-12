@@ -151,6 +151,10 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
         return Timestamp.parseTimestamp(timestamp);
     }
 
+    public String singleTaskStateFile() {
+        return getConfig().getString(SINGLETASK_STATE_FILE_PROPERTY_NAME);
+    }
+
     public Timestamp endTime() {
         String timestamp = getConfig().getString(END_TIME_PROPERTY_NAME);
         return timestamp == null ? null : Timestamp.parseTimestamp(timestamp);

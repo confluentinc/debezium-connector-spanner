@@ -26,7 +26,9 @@ import io.debezium.connector.spanner.coordination.kafka.internal.model.Partition
 import io.debezium.connector.spanner.coordination.kafka.internal.model.PartitionStateEnum;
 import io.debezium.connector.spanner.coordination.kafka.internal.model.RebalanceState;
 import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState;
+import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskState.TaskStateBuilder;
 import io.debezium.connector.spanner.coordination.kafka.internal.model.TaskSyncEvent;
+import io.debezium.connector.spanner.coordination.singletask.SingleTaskStateRestorer;
 
 /**
  * Represents state of the current task and collected
@@ -129,6 +131,33 @@ public class TaskSyncContext {
 
     public static TaskSyncContext getInitialContext(String taskUid, SpannerConnectorConfig connectorConfig) {
         long now = Instant.now().toEpochMilli();
+
+        TaskState currentTaskState;
+        if (connectorConfig.isSingleTaskCoordination()) {
+            TaskState restored = SingleTaskStateRestorer.restore(connectorConfig.singleTaskStateFile());
+            TaskStateBuilder builder;
+            if (restored != null) {
+                builder = restored.toBuilder();
+            }
+            else {
+                builder = TaskState.builder().partitions(emptyList()).sharedPartitions(emptyList());
+            }
+            currentTaskState = builder
+                    .taskUid(taskUid)
+                    .consumerId("")
+                    .stateTimestamp(now)
+                    .build();
+        }
+        else {
+            currentTaskState = TaskState.builder()
+                    .taskUid(taskUid)
+                    .consumerId("")
+                    .partitions(emptyList())
+                    .sharedPartitions(emptyList())
+                    .stateTimestamp(now)
+                    .build();
+        }
+
         return TaskSyncContext.builder()
                 .taskUid(taskUid)
                 .consumerId("")
@@ -137,14 +166,7 @@ public class TaskSyncContext {
                 .receivedRebalanceGenerationId(-2)
                 .rebalanceState(RebalanceState.START_INITIAL_SYNC)
                 .createdTimestamp(now)
-                .currentTaskState(
-                        TaskState.builder()
-                                .taskUid(taskUid)
-                                .consumerId("")
-                                .partitions(emptyList())
-                                .sharedPartitions(emptyList())
-                                .stateTimestamp(now)
-                                .build())
+                .currentTaskState(currentTaskState)
                 .build();
     }
 
