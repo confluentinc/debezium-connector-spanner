@@ -172,6 +172,10 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
         return getConfig().getString(GCP_SPANNER_CREDENTIALS_PATH_PROPERTY_NAME);
     }
 
+    public String gcpSpannerCredentialsProvider() {
+        return getConfig().getString(GCP_SPANNER_CREDENTIALS_PROVIDER_PROPERTY_NAME);
+    }
+
     public String tableExcludeList() {
         return getConfig().getString(TABLE_EXCLUDE_LIST);
     }
