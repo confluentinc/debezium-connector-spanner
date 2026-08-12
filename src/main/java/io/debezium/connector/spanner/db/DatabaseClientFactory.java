@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.FixedHeaderProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -50,12 +51,13 @@ public class DatabaseClientFactory {
                                  String credentialsJson,
                                  String credentialsPath, String host, String emulatorHost, String databaseRole) {
 
-        this(projectId, instanceId, databaseId, credentialsJson, credentialsPath, host, emulatorHost, databaseRole, null, false, null, null);
+        this(projectId, instanceId, databaseId, credentialsJson, credentialsPath, null, host, emulatorHost, databaseRole, null, false, null, null);
     }
 
     public DatabaseClientFactory(String projectId, String instanceId, String databaseId,
                                  String credentialsJson,
-                                 String credentialsPath, String host, String emulatorHost, String databaseRole, BaseSpannerConnectorConfig.SpannerType spannerType,
+                                 String credentialsPath, String credentialsProvider, String host, String emulatorHost, String databaseRole,
+                                 BaseSpannerConnectorConfig.SpannerType spannerType,
                                  boolean usePlainText,
                                  String clientKeyPath, String clientCertPath) {
 
@@ -72,7 +74,7 @@ public class DatabaseClientFactory {
         SpannerOptions.Builder builder = SpannerOptions.newBuilder();
 
         GoogleCredentials googleCredentials = getGoogleCredentials(credentialsJson,
-                credentialsPath);
+                credentialsPath, credentialsProvider);
         builder.setProjectId(this.projectId);
         if (!Strings.isNullOrEmpty(host)) {
             builder.setHost(host);
@@ -111,13 +113,31 @@ public class DatabaseClientFactory {
 
     public DatabaseClientFactory(SpannerConnectorConfig config) {
         this(config.projectId(), config.instanceId(), config.databaseId(),
-                config.gcpSpannerCredentialsJson(), config.gcpSpannerCredentialsPath(),
+                config.gcpSpannerCredentialsJson(), config.gcpSpannerCredentialsPath(), config.gcpSpannerCredentialsProvider(),
                 config.spannerHost(), config.spannerEmulatorHost(), config.databaseRole(), config.spannerType(), config.usePlainText(), config.clientKeyPath(),
                 config.clientCertPath());
     }
 
     @VisibleForTesting
     GoogleCredentials getGoogleCredentials(String credentialsJson, String credentialsPath) {
+        return getGoogleCredentials(credentialsJson, credentialsPath, null);
+    }
+
+    @VisibleForTesting
+    GoogleCredentials getGoogleCredentials(String credentialsJson, String credentialsPath, String credentialsProvider) {
+        if (!Strings.isNullOrEmpty(credentialsProvider)) {
+            try {
+                CredentialsProvider provider = (CredentialsProvider) Class.forName(credentialsProvider)
+                        .getDeclaredConstructor()
+                        .newInstance();
+                return (GoogleCredentials) provider.getCredentials();
+            }
+            catch (Exception ex) {
+                LOGGER.error("Error instantiating credentials provider " + credentialsProvider);
+                LOGGER.error(ex.getMessage(), ex);
+                return null;
+            }
+        }
         GoogleCredentials credential = null;
         if (credentialsJson != null) {
             try {

@@ -106,6 +106,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
     protected static final String END_TIME_PROPERTY_NAME = "gcp.spanner.end.time";
     protected static final String GCP_SPANNER_CREDENTIALS_PATH_PROPERTY_NAME = "gcp.spanner.credentials.path";
     protected static final String GCP_SPANNER_CREDENTIALS_JSON_PROPERTY_NAME = "gcp.spanner.credentials.json";
+    protected static final String GCP_SPANNER_CREDENTIALS_PROVIDER_PROPERTY_NAME = "gcp.spanner.credentials.provider";
 
     public static final String SPANNER_TYPE_PROPERTY_NAME = "spanner.type";
     protected static final String SPANNER_OMNI_USE_PLAINTEXT_PROPERTY_NAME = "spanner.omni.use.plaintext";
@@ -268,6 +269,16 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withImportance(Importance.MEDIUM)
             .withValidation(FieldValidator::isCorrectJson)
             .withDescription("Service account keys with json format");
+
+    public static final Field SPANNER_CREDENTIALS_PROVIDER = Field.create(GCP_SPANNER_CREDENTIALS_PROVIDER_PROPERTY_NAME)
+            .withDisplayName(GCP_SPANNER_CREDENTIALS_PROVIDER_PROPERTY_NAME)
+            .withType(Type.STRING)
+            .withGroup(Field.createGroupEntry(Field.Group.CONNECTOR, 2))
+            .withWidth(Width.MEDIUM)
+            .withImportance(Importance.MEDIUM)
+            .withDescription("Fully-qualified class name of a com.google.api.gax.core.CredentialsProvider " +
+                    "implementation, instantiated via its no-arg constructor, used to obtain Spanner credentials. " +
+                    "Takes precedence over gcp.spanner.credentials.json/path and Application Default Credentials.");
 
     public static final Field STREAM_EVENT_QUEUE_CAPACITY = Field.create(STREAM_EVENT_QUEUE_CAPACITY_PROPERTY_NAME)
             .withDisplayName("Change steam queue capacity")
@@ -705,6 +716,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
                     END_TIME,
                     SPANNER_CREDENTIALS_PATH,
                     SPANNER_CREDENTIALS_JSON,
+                    SPANNER_CREDENTIALS_PROVIDER,
                     SPANNER_HOST,
                     SPANNER_EMULATOR_HOST,
                     SPANNER_TYPE,
