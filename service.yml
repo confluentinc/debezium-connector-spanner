@@ -10,3 +10,8 @@ semaphore:
   enable: true
   branches:
     - release-3.6.0.Final-confluent
+  managed_sections:
+    - version
+    - name
+    - agent
+    - global_job_config
