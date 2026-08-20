@@ -426,9 +426,13 @@
                     <version>0.40.1</version>
                 </plugin>
                 <!--
-                  debezium-parent wires these tooling jars to ${project.version}, which no
-                  longer matches the Debezium release now that the connector version is
-                  decoupled (3.3.2 vs 3.3.2.Final). Re-pin them to ${version.debezium}.
+                  debezium-parent wires these tooling jars' deps via its own
+                  pluginManagement at ${project.version}, which no longer matches the
+                  Debezium release now that the connector version is decoupled (3.3.2 vs
+                  3.3.2.Final). Overriding them here in our pluginManagement re-pins them to
+                  ${version.debezium}. (checkstyle is handled in <build><plugins> below,
+                  because the parent declares its dependency explicitly there, where
+                  pluginManagement cannot reach it.)
                 -->
                 <plugin>
                     <groupId>net.revelc.code.formatter</groupId>
@@ -437,17 +441,6 @@
                         <dependency>
                             <groupId>io.debezium</groupId>
                             <artifactId>debezium-ide-configs</artifactId>
-                            <version>${version.debezium}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <dependencies>
-                        <dependency>
-                            <groupId>io.debezium</groupId>
-                            <artifactId>debezium-checkstyle</artifactId>
                             <version>${version.debezium}</version>
                         </dependency>
                     </dependencies>
@@ -466,6 +459,25 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <!--
+              debezium-parent declares maven-checkstyle-plugin with an explicit
+              debezium-checkstyle:${project.version} dependency in its build/plugins, so a
+              pluginManagement override can't reach it. Re-declare the plugin here (no
+              executions - those are inherited) to override the dependency to
+              ${version.debezium} now that the connector version is decoupled from the
+              Debezium release.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.debezium</groupId>
+                        <artifactId>debezium-checkstyle</artifactId>
+                        <version>${version.debezium}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
