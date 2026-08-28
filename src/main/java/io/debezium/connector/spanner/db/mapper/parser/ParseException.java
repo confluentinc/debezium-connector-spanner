@@ -12,4 +12,12 @@ public class ParseException extends RuntimeException {
     public ParseException(String json, Exception ex) {
         super("Error parse string: " + json, ex);
     }
+
+    /**
+     * Builds a parse exception carrying only a fixed, non-sensitive reason (no cause), for
+     * callers parsing customer data that must not surface the raw content or the parser's cause.
+     */
+    public ParseException(String reason) {
+        super("Error parse string: " + reason);
+    }
 }

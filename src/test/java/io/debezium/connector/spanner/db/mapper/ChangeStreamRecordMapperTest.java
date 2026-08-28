@@ -75,6 +75,42 @@ class ChangeStreamRecordMapperTest {
     }
 
     @Test
+    public void toStreamEventJsonDoesNotLeakRawRecordOnProtoParseFailure() {
+        // Malformed PG-JSONB record whose content is a synthetic stand-in for customer values
+        // (keys / old_values / new_values). It must never surface in the thrown exception, which
+        // propagates uncaught to the forwarded SpannerChangeStream / SpannerErrorHandler loggers.
+        final String canary = "SENSITIVE_CANARY_row139";
+        final String malformedRow = "{ not valid proto json " + canary;
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> changeStreamRecordMapper.toStreamEventJson(partition, malformedRow, resultSetMetadata));
+
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            assertFalse(t.getMessage() != null && t.getMessage().contains(canary),
+                    "raw record leaked via " + t.getClass().getName() + ": " + t.getMessage());
+        }
+        // Debuggability preserved via the safe partition token.
+        assertTrue(ex.getMessage().contains("partitionToken"));
+    }
+
+    @Test
+    public void toStreamEventJsonDoesNotLeakRawRecordOnUnknownRecordType() {
+        // Valid proto-JSON that is not a recognized record type, carrying a synthetic customer-value
+        // canary as a field. The raw record must not surface in the thrown exception.
+        final String canary = "SENSITIVE_CANARY_row152";
+        final String unknownTypeRow = "{\"" + canary + "\": \"x\"}";
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> changeStreamRecordMapper.toStreamEventJson(partition, unknownTypeRow, resultSetMetadata));
+
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            assertFalse(t.getMessage() != null && t.getMessage().contains(canary),
+                    "raw record leaked via " + t.getClass().getName() + ": " + t.getMessage());
+        }
+        assertTrue(ex.getMessage().contains("partitionToken"));
+    }
+
+    @Test
     public void testMappingUpdateJsonRowToDataChangeRecord() {
 
         final DataChangeEvent dataChangeRecord = new DataChangeEvent(
