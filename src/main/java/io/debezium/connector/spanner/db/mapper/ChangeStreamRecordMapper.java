@@ -136,7 +136,9 @@ public class ChangeStreamRecordMapper {
             this.parser.merge(row, valueBuilder);
         }
         catch (InvalidProtocolBufferException exc) {
-            throw new IllegalArgumentException("Failed to parse record into proto: " + row);
+            // Do not embed the raw change record (customer keys/old_values/new_values) in the
+            // message: it propagates uncaught and is logged by SpannerChangeStream/SpannerErrorHandler.
+            throw new IllegalArgumentException("Failed to parse record into proto for partition token: " + partition.getToken());
         }
         Value value = valueBuilder.build();
         if (isNonNullDataChangeRecordJson(value)) {
@@ -149,7 +151,9 @@ public class ChangeStreamRecordMapper {
             return toChildPartitionsRecordJson(partition, value, resultSetMetadata);
         }
         else {
-            throw new IllegalArgumentException("Unknown change stream record type " + row);
+            // Do not embed the raw change record (customer keys/old_values/new_values) in the
+            // message: it propagates uncaught and is logged by SpannerChangeStream/SpannerErrorHandler.
+            throw new IllegalArgumentException("Unknown change stream record type for partition token: " + partition.getToken());
         }
     }
 
@@ -366,7 +370,9 @@ public class ChangeStreamRecordMapper {
                     MapperUtils.getJsonNode(oldValues), MapperUtils.getJsonNode(newValues));
         }
         catch (InvalidProtocolBufferException exc) {
-            throw new IllegalArgumentException("Failed to print mod: " + row);
+            // Do not embed the raw Mod value (customer keys/old_values/new_values) in the
+            // message: it propagates uncaught and is logged by SpannerChangeStream/SpannerErrorHandler.
+            throw new IllegalArgumentException("Failed to print mod number: " + modNumber);
         }
     }
 
