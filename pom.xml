@@ -650,15 +650,11 @@
 
     <profiles>
         <!--
-          Produces a Confluent Platform-compatible connector jar. Activated by a dedicated
-          CI/CD pipeline (mvn ... -Pshaded-plugin) that publishes the resulting jar; not part
-          of the normal build. It relocates io.grpc.** into an internal package so the
-          connector's bundled gRPC cannot clash with the unshaded grpc-netty that CP 8.x
-          (cp-server-connect) and CC Custom Connectors put on the Connect worker's base
-          classpath (otherwise: "io.grpc.ManagedChannelProvider: io.grpc.netty.
-          NettyChannelProvider not a subtype" at connector validation). ServicesResourceTransformer
-          rewrites the provider service files so the plugin resolves only its own gRPC providers.
-          Output: target/${project.artifactId}-${project.version}-shaded.jar (the deployable jar).
+          Opt-in (mvn -Pshaded-plugin) build of a Confluent Platform-compatible connector jar
+          for a separate CI/CD to publish; not part of the normal build. Relocates io.grpc.**
+          so the bundled gRPC does not clash with the unshaded grpc-netty on CP 8.x's Connect
+          classpath ("io.grpc.ManagedChannelProvider: ... NettyChannelProvider not a subtype").
+          Output: target/${project.artifactId}-${project.version}-shaded.jar.
         -->
         <profile>
             <id>shaded-plugin</id>
