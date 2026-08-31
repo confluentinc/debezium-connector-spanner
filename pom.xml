@@ -649,6 +649,80 @@
     </build>
 
     <profiles>
+        <!--
+          Produces a Confluent Platform-compatible connector jar. Activated by a dedicated
+          CI/CD pipeline (mvn ... -Pshaded-plugin) that publishes the resulting jar; not part
+          of the normal build. It relocates io.grpc.** into an internal package so the
+          connector's bundled gRPC cannot clash with the unshaded grpc-netty that CP 8.x
+          (cp-server-connect) and CC Custom Connectors put on the Connect worker's base
+          classpath (otherwise: "io.grpc.ManagedChannelProvider: io.grpc.netty.
+          NettyChannelProvider not a subtype" at connector validation). ServicesResourceTransformer
+          rewrites the provider service files so the plugin resolves only its own gRPC providers.
+          Output: target/${project.artifactId}-${project.version}-shaded.jar (the deployable jar).
+        -->
+        <profile>
+            <id>shaded-plugin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.5.1</version>
+                        <dependencies>
+                            <!-- ASM 9.7 reads Java 22 (major 66) multi-release classes present
+                                 in jackson-core 2.19.0; the plugin's bundled ASM cannot. -->
+                            <dependency>
+                                <groupId>org.ow2.asm</groupId>
+                                <artifactId>asm</artifactId>
+                                <version>9.7</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.ow2.asm</groupId>
+                                <artifactId>asm-commons</artifactId>
+                                <version>9.7</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>shade-plugin-jar</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                                    <shadedClassifierName>shaded</shadedClassifierName>
+                                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                                    <relocations>
+                                        <relocation>
+                                            <pattern>io.grpc</pattern>
+                                            <shadedPattern>io.debezium.connector.spanner.shaded.io.grpc</shadedPattern>
+                                        </relocation>
+                                    </relocations>
+                                    <transformers>
+                                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                    </transformers>
+                                    <filters>
+                                        <filter>
+                                            <artifact>*:*</artifact>
+                                            <excludes>
+                                                <exclude>META-INF/*.SF</exclude>
+                                                <exclude>META-INF/*.DSA</exclude>
+                                                <exclude>META-INF/*.RSA</exclude>
+                                                <exclude>module-info.class</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>assembly</id>
             <activation>
