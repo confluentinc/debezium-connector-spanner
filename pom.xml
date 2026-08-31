@@ -8,13 +8,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>debezium-connector-spanner</artifactId>
-    <version>3.3.2.Final</version>
+    <version>3.3.2</version>
     <name>Debezium Google Spanner Kafka Connector Plugin</name>
 
     <packaging>jar</packaging>
 
     <properties>
-        <version.debezium>${project.version}</version.debezium>
+        <version.debezium>3.3.2.Final</version.debezium>
         <version.debezium.core>3.3.2.Final.Spanner-4</version.debezium.core>
         <google.cloud.spanner.version>6.30.1</google.cloud.spanner.version>
         <version.sketches-java>0.8.2</version.sketches-java>
@@ -65,6 +65,20 @@
 
     <dependencyManagement>
         <dependencies>
+
+            <!--
+              Override the debezium-bom import inherited from debezium-parent. The parent
+              imports it at ${project.version}, which assumes the module version matches the
+              Debezium release. Since this connector's version is decoupled (e.g. 3.3.2 vs
+              3.3.2.Final), pin the BOM to the actual Debezium version explicitly.
+            -->
+            <dependency>
+                <groupId>io.debezium</groupId>
+                <artifactId>debezium-bom</artifactId>
+                <version>${version.debezium}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <!-- Debezium artifacts -->
             <dependency>
@@ -411,9 +425,59 @@
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.40.1</version>
                 </plugin>
+                <!--
+                  debezium-parent wires these tooling jars' deps via its own
+                  pluginManagement at ${project.version}, which no longer matches the
+                  Debezium release now that the connector version is decoupled (3.3.2 vs
+                  3.3.2.Final). Overriding them here in our pluginManagement re-pins them to
+                  ${version.debezium}. (checkstyle is handled in <build><plugins> below,
+                  because the parent declares its dependency explicitly there, where
+                  pluginManagement cannot reach it.)
+                -->
+                <plugin>
+                    <groupId>net.revelc.code.formatter</groupId>
+                    <artifactId>formatter-maven-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.debezium</groupId>
+                            <artifactId>debezium-ide-configs</artifactId>
+                            <version>${version.debezium}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.revapi</groupId>
+                    <artifactId>revapi-maven-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>io.debezium</groupId>
+                            <artifactId>debezium-revapi</artifactId>
+                            <version>${version.debezium}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
+            <!--
+              debezium-parent declares maven-checkstyle-plugin with an explicit
+              debezium-checkstyle:${project.version} dependency in its build/plugins, so a
+              pluginManagement override can't reach it. Re-declare the plugin here (no
+              executions - those are inherited) to override the dependency to
+              ${version.debezium} now that the connector version is decoupled from the
+              Debezium release.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.debezium</groupId>
+                        <artifactId>debezium-checkstyle</artifactId>
+                        <version>${version.debezium}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
@@ -600,7 +664,7 @@
                             <dependency>
                                 <groupId>io.debezium</groupId>
                                 <artifactId>debezium-assembly-descriptors</artifactId>
-                                <version>${project.version}</version>
+                                <version>${version.debezium}</version>
                             </dependency>
                         </dependencies>
                         <executions>
