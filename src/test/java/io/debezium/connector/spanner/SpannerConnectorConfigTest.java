@@ -38,6 +38,29 @@ class SpannerConnectorConfigTest {
     }
 
     @Test
+    void testGetStuckPartitionStrategyDefaultsToEscalate() {
+        SpannerConnectorConfig config = new SpannerConnectorConfig(
+                Configuration.create().with("name", "test").build());
+        assertEquals(StuckPartitionStrategy.ESCALATE, config.getStuckPartitionStrategy());
+    }
+
+    @Test
+    void testGetStuckPartitionStrategyRepeatStreamingOverride() {
+        SpannerConnectorConfig config = new SpannerConnectorConfig(
+                Configuration.create().with("name", "test")
+                        .with("connector.spanner.stuck.partition.strategy", "REPEAT_STREAMING").build());
+        assertEquals(StuckPartitionStrategy.REPEAT_STREAMING, config.getStuckPartitionStrategy());
+    }
+
+    @Test
+    void testGetStuckPartitionStrategyInvalidFallsBackToEscalate() {
+        SpannerConnectorConfig config = new SpannerConnectorConfig(
+                Configuration.create().with("name", "test")
+                        .with("connector.spanner.stuck.partition.strategy", "nonsense").build());
+        assertEquals(StuckPartitionStrategy.ESCALATE, config.getStuckPartitionStrategy());
+    }
+
+    @Test
     void testGetConnectorName() {
         Configuration configuration = mock(Configuration.class);
         when(configuration.getString((Field) any())).thenReturn("String");
