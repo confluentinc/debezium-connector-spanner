@@ -107,6 +107,17 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
         return getConfig().getInteger(MAX_MISSED_HEARTBEATS);
     }
 
+    public StuckPartitionStrategy getStuckPartitionStrategy() {
+        String value = getConfig().getString(STUCK_PARTITION_STRATEGY);
+        try {
+            return StuckPartitionStrategy.valueOf(value.trim().toUpperCase());
+        }
+        catch (IllegalArgumentException | NullPointerException e) {
+            LOGGER.warn("Invalid stuck partition strategy '{}', defaulting to ESCALATE", value);
+            return StuckPartitionStrategy.ESCALATE;
+        }
+    }
+
     public Duration getLowWatermarkStampInterval() {
         return getConfig().getDuration(LOW_WATERMARK_STAMP_INTERVAL, ChronoUnit.MILLIS);
     }

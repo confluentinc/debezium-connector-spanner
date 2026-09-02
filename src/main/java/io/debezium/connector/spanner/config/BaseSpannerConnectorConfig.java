@@ -18,6 +18,7 @@ import io.debezium.config.ConfigDefinition;
 import io.debezium.config.Configuration;
 import io.debezium.config.Field;
 import io.debezium.connector.spanner.SpannerSourceInfoStructMaker;
+import io.debezium.connector.spanner.StuckPartitionStrategy;
 import io.debezium.connector.spanner.config.validation.FieldValidator;
 import io.debezium.heartbeat.Heartbeat;
 import io.debezium.schema.AbstractTopicNamingStrategy;
@@ -86,6 +87,8 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
     private static final String CONNECTOR_SPANNER_TASK_AWAIT_TASK_ANSWER_TIMEOUT_PROPERTY_NAME = "connector.spanner.task.await.task.answer.timeout";
 
     private static final String MAX_MISSED_HEARTBEATS_PROPERTY_NAME = "connector.spanner.max.missed.heartbeats";
+
+    private static final String STUCK_PARTITION_STRATEGY_PROPERTY_NAME = "connector.spanner.stuck.partition.strategy";
 
     private static final String MAX_TASKS_PROPERTY_NAME = "tasks.max";
     private static final String MIN_TASKS_PROPERTY_NAME = "tasks.min";
@@ -285,6 +288,17 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withDescription("Maximum missed heartbeats to identify that partition gets stuck")
             .withDefault(10)
             .withValidation(Field::isNonNegativeInteger);
+
+    protected static final Field STUCK_PARTITION_STRATEGY = Field.create(STUCK_PARTITION_STRATEGY_PROPERTY_NAME)
+            .withDisplayName("Stuck partition handling strategy")
+            .withType(Type.STRING)
+            .withGroup(Field.createGroupEntry(Field.Group.CONNECTION_ADVANCED, 0))
+            .withWidth(Width.SHORT)
+            .withImportance(Importance.LOW)
+            .withDescription("How to handle a change stream partition that appears stuck. "
+                    + "REPEAT_STREAMING re-queries only that partition and keeps the task running; "
+                    + "ESCALATE fails and restarts the whole task.")
+            .withDefault(StuckPartitionStrategy.ESCALATE.name());
 
     private static final Field VALUE_CAPTURE_MODE = Field.create(VALUE_CAPTURE_MODE_PROPERTY_NAME)
             .withDisplayName("Value capture mode")
