@@ -46,8 +46,6 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpannerStreamingChangeEventSource.class);
 
-    private static final StuckPartitionStrategy STUCK_PARTITION_STRATEGY = StuckPartitionStrategy.ESCALATE;
-
     private static final Duration FINISHING_PARTITION_TIMEOUT = Duration.ofSeconds(300);
 
     private static final long INITIAL_TOKEN_BATCH_SIZE = 200;
@@ -76,6 +74,8 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
 
     private final SpannerConnectorConfig connectorConfig;
 
+    private final StuckPartitionStrategy stuckPartitionStrategy;
+
     private volatile Thread thread;
 
     public SpannerStreamingChangeEventSource(SpannerConnectorConfig connectorConfig,
@@ -89,6 +89,7 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
                                              boolean finishingAfterCommit,
                                              SpannerOffsetContextFactory offsetContextFactory) {
         this.connectorConfig = connectorConfig;
+        this.stuckPartitionStrategy = connectorConfig.getStuckPartitionStrategy();
         this.offsetContextFactory = offsetContextFactory;
         this.errorHandler = errorHandler;
         this.eventQueue = eventQueue;
@@ -140,11 +141,11 @@ public class SpannerStreamingChangeEventSource implements CommittingRecordsStrea
 
                 @Override
                 public boolean onStuckPartition(String token) throws InterruptedException {
-                    if (STUCK_PARTITION_STRATEGY.equals(StuckPartitionStrategy.REPEAT_STREAMING)) {
+                    if (stuckPartitionStrategy.equals(StuckPartitionStrategy.REPEAT_STREAMING)) {
                         LOGGER.warn("Try to requery partition {}", token);
                         partitionManager.updateToReadyForStreaming(token);
                     }
-                    else if (STUCK_PARTITION_STRATEGY.equals(StuckPartitionStrategy.ESCALATE)) {
+                    else if (stuckPartitionStrategy.equals(StuckPartitionStrategy.ESCALATE)) {
                         return true;
                     }
                     return false;
