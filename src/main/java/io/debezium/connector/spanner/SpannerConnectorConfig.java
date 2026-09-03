@@ -113,8 +113,8 @@ public class SpannerConnectorConfig extends BaseSpannerConnectorConfig {
             return StuckPartitionStrategy.valueOf(value.trim().toUpperCase());
         }
         catch (IllegalArgumentException | NullPointerException e) {
-            LOGGER.warn("Invalid stuck partition strategy '{}', defaulting to ESCALATE", value);
-            return StuckPartitionStrategy.ESCALATE;
+            LOGGER.warn("Invalid stuck partition strategy '{}', defaulting to REPEAT_STREAMING", value);
+            return StuckPartitionStrategy.REPEAT_STREAMING;
         }
     }
 
