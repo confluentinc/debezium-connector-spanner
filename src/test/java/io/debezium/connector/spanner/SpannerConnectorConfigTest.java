@@ -38,26 +38,26 @@ class SpannerConnectorConfigTest {
     }
 
     @Test
-    void testGetStuckPartitionStrategyDefaultsToEscalate() {
+    void testGetStuckPartitionStrategyDefaultsToRepeatStreaming() {
         SpannerConnectorConfig config = new SpannerConnectorConfig(
                 Configuration.create().with("name", "test").build());
-        assertEquals(StuckPartitionStrategy.ESCALATE, config.getStuckPartitionStrategy());
-    }
-
-    @Test
-    void testGetStuckPartitionStrategyRepeatStreamingOverride() {
-        SpannerConnectorConfig config = new SpannerConnectorConfig(
-                Configuration.create().with("name", "test")
-                        .with("connector.spanner.stuck.partition.strategy", "REPEAT_STREAMING").build());
         assertEquals(StuckPartitionStrategy.REPEAT_STREAMING, config.getStuckPartitionStrategy());
     }
 
     @Test
-    void testGetStuckPartitionStrategyInvalidFallsBackToEscalate() {
+    void testGetStuckPartitionStrategyEscalateOverride() {
+        SpannerConnectorConfig config = new SpannerConnectorConfig(
+                Configuration.create().with("name", "test")
+                        .with("connector.spanner.stuck.partition.strategy", "ESCALATE").build());
+        assertEquals(StuckPartitionStrategy.ESCALATE, config.getStuckPartitionStrategy());
+    }
+
+    @Test
+    void testGetStuckPartitionStrategyInvalidFallsBackToRepeatStreaming() {
         SpannerConnectorConfig config = new SpannerConnectorConfig(
                 Configuration.create().with("name", "test")
                         .with("connector.spanner.stuck.partition.strategy", "nonsense").build());
-        assertEquals(StuckPartitionStrategy.ESCALATE, config.getStuckPartitionStrategy());
+        assertEquals(StuckPartitionStrategy.REPEAT_STREAMING, config.getStuckPartitionStrategy());
     }
 
     @Test

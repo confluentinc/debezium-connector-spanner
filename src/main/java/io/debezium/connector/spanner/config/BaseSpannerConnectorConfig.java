@@ -298,7 +298,7 @@ public abstract class BaseSpannerConnectorConfig extends CommonConnectorConfig {
             .withDescription("How to handle a change stream partition that appears stuck. "
                     + "REPEAT_STREAMING re-queries only that partition and keeps the task running; "
                     + "ESCALATE fails and restarts the whole task.")
-            .withDefault(StuckPartitionStrategy.ESCALATE.name());
+            .withDefault(StuckPartitionStrategy.REPEAT_STREAMING.name());
 
     private static final Field VALUE_CAPTURE_MODE = Field.create(VALUE_CAPTURE_MODE_PROPERTY_NAME)
             .withDisplayName("Value capture mode")
