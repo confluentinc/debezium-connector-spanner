@@ -138,7 +138,7 @@ public class ChangeStreamRecordMapper {
         catch (InvalidProtocolBufferException exc) {
             // Do not embed the raw change record (customer keys/old_values/new_values) in the
             // message: it propagates uncaught and is logged by SpannerChangeStream/SpannerErrorHandler.
-            throw new IllegalArgumentException("Failed to parse record into proto for partition token: " + partition.getToken());
+            throw new IllegalArgumentException("Failed to parse record into proto for partition token: " + safeToken(partition));
         }
         Value value = valueBuilder.build();
         if (isNonNullDataChangeRecordJson(value)) {
@@ -153,8 +153,14 @@ public class ChangeStreamRecordMapper {
         else {
             // Do not embed the raw change record (customer keys/old_values/new_values) in the
             // message: it propagates uncaught and is logged by SpannerChangeStream/SpannerErrorHandler.
-            throw new IllegalArgumentException("Unknown change stream record type for partition token: " + partition.getToken());
+            throw new IllegalArgumentException("Unknown change stream record type for partition token: " + safeToken(partition));
         }
+    }
+
+    // Null-safe accessor for the partition token used only for diagnostics. A null partition on the
+    // error path must not turn a descriptive parse failure into an unrelated NullPointerException.
+    private static String safeToken(Partition partition) {
+        return partition == null ? "<unknown>" : partition.getToken();
     }
 
     private HeartbeatEvent toHeartbeatRecordJson(
@@ -345,7 +351,9 @@ public class ChangeStreamRecordMapper {
                     null);
         }
         catch (InvalidProtocolBufferException exc) {
-            throw new IllegalArgumentException("Failed to print type: " + row);
+            // Do not embed the raw column-type record (schema metadata) in the message: it
+            // propagates uncaught and is logged by SpannerChangeStream/SpannerErrorHandler.
+            throw new IllegalArgumentException("Failed to print column type from change stream record");
         }
     }
 

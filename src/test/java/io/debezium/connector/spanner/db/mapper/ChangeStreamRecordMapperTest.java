@@ -90,7 +90,8 @@ class ChangeStreamRecordMapperTest {
                     "raw record leaked via " + t.getClass().getName() + ": " + t.getMessage());
         }
         // Debuggability preserved via the safe partition token.
-        assertTrue(ex.getMessage().contains("partitionToken"));
+        assertTrue(ex.getMessage().contains("partition token:"));
+        assertTrue(ex.getMessage().contains(partition.getToken()));
     }
 
     @Test
@@ -107,7 +108,8 @@ class ChangeStreamRecordMapperTest {
             assertFalse(t.getMessage() != null && t.getMessage().contains(canary),
                     "raw record leaked via " + t.getClass().getName() + ": " + t.getMessage());
         }
-        assertTrue(ex.getMessage().contains("partitionToken"));
+        assertTrue(ex.getMessage().contains("partition token:"));
+        assertTrue(ex.getMessage().contains(partition.getToken()));
     }
 
     @Test
