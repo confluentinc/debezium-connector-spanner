@@ -29,7 +29,11 @@ public class MapperUtils {
             return mapper.readTree(json);
         }
         catch (JsonProcessingException e) {
-            throw new ParseException(json, e);
+            // Do not embed the raw JSON (customer column values) in the message, and do not retain
+            // the Jackson cause, whose own message can echo the raw content (e.g. "Unrecognized
+            // token '<value>'"). Both propagate uncaught and are logged by the forwarded
+            // SpannerChangeStream / SpannerErrorHandler loggers.
+            throw new ParseException("change record value");
         }
     }
 }
